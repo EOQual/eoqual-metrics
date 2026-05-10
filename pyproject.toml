@@ -1,0 +1,86 @@
+# Documentation de poetry: https://python-poetry.org/docs/pyproject/
+
+[tool.poetry]
+name = "eopl-metrics"
+version = "0.5.0"
+description = "Collection of image metrics"
+authors = ["Olivier Amram <olivier.amram@free.fr>"]
+maintainers = [
+    "Olivier Amram <olivier.amram@free.fr>"
+]
+repository = "https://github.com/EOQual/eoqual-metrics.git"
+readme = "README.md"
+license = "MIT"
+#include = ["CHANGELOG.md"]
+keywords = ["metrics", "image"]
+packages = [{include = "eoqual_metrics", from = "src"}]
+exclude = [
+    "**/__pycache__",
+    "**/.DS_Store"
+]
+
+[[tool.poetry.source]]
+name = "pypi-public"
+url = "https://pypi.org/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "zMetrics"
+url = "https://git.oamcloud.uk/api/packages/olivier/pypi"
+priority = "supplemental"
+
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+cookiecutter = "^2.1.1"
+numpy = "*"
+scipy = "*"
+scikit-image = ">0.20.0"
+scikit-learn = "*"
+opencv-python = "*"
+joblib = "*"
+# pyfftw : Necessaire a image-similarity-measures
+pyfftw = {git = "https://github.com/pyFFTW/pyFFTW.git"}
+sewar = "*"
+#image-similarity-measures = "*" # A installer manuellement
+matplotlib = "^3.5.0"
+# ATTENTION: cpdb : cannot import name 'imread' from 'scipy.ndimage' --> import a commenter (compute.py)
+cpbd = "^1.0.7"
+pyrtools = "^1.0.1"
+pydom = {git = "https://github.com/umang-singhal/pydom.git"}
+rich = "*"
+loguru = "*"
+
+# metrikz : Inclus dans le source ?
+# metrikz = {git = "https://gitlab.com/gpds-unb/pymetrikz"}
+
+torchvision = "*"
+IQA_pytorch = "*"   # https://github.com/dingkeyan93/IQA-optimization
+
+image-quality = {version="*", optional=true}
+brisque = {version="^0.0.15", optional=true}
+#pywavelets = "^1.8.0"
+Pywavelets = "*"
+pandas = "^2.2.3"
+
+[tool.poetry.extras]
+# conda install -c conda-forge libsvm <> pip install libsvm
+svm = ["image-quality", "brisque"]
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinx-autoapi = "*"
+
+[tool.poetry.group.dev.dependencies]
+poetry = "^2.1.1"
+ipython = "^8.8.0"
+black = "^23.3.0"
+coverage = "^6.5.0"
+pylint = "*"
+pytest = "<9"
+deepdiff = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

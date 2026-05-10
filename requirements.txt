@@ -1,0 +1,27 @@
+# N'est pas à jour
+
+#------------------------------------------------------------------------------
+# METHHOD 1
+#------------------------------------------------------------------------------
+conda create -n zMetric
+conda activate zMetrics
+conda install -c conda-forge poetry
+poetry install
+python postinstall # ATTENTION: cpbd : cannot import name 'imread' from 'scipy.ndimage' --> import a commenter (compute.py)
+
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# METHHOD 1
+#------------------------------------------------------------------------------
+cd /Volumes/OAM_64Go/zPROJETS/zMetrics
+python3 -m venv .venv
+cd ..; cd ../zMetrics # Permet l'activation de .venv
+pip install poetry
+.venv/bin/poetry install # .venv/bin/poetry update
+python postinstall # ATTENTION: cpbd : cannot import name 'imread' from 'scipy.ndimage' --> import a commenter (compute.py)
+#------------------------------------------------------------------------------
+
+# .venv/bin/poetry install -E svm
+
+python src/tests/test_all_zMetrics.py
