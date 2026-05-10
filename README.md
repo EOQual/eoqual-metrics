@@ -1,4 +1,4 @@
-# Wrapper for metric method
+# Wrapper for metric methods
 
 ## Requirements
 - FFTW [https://www.fftw.org/] >= 3.3
