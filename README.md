@@ -10,16 +10,14 @@
     + pixi add fftw
 
 ## Installation
-pip install git+https://git.oamcloud.uk/olivier/zMetrics.git \
-or \
-pip install --index-url https://git.oamcloud.uk/api/packages/olivier/pypi/simple --extra-index-url https://pypi.org/simple zMetrics
+pip install git+https://github.com/EOQual/eoqual-metrics.git
 
 And after, \
 pip install image-similarity-measures --no-deps \
 python postinstallation
 
 ## Full-Reference IQA (Image Quality Assessment)
-| Métrics                                                    |||||
+| Metrics    |            |            |            |            |
 |------------|------------|------------|------------|------------|
 | cw_ssim    | dists      | ergas      | fsim       | gmsd       |
 | issm       | lpips_vgg  | mad        | mae        | mdae       |
