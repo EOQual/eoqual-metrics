@@ -1,0 +1,36 @@
+# Définir les étapes du pipeline
+stages:
+  - build
+  - deploy
+
+# Étape pour construire la documentation
+build:
+  stage: build
+  image: python:3.12  # Use Python 3.12 to match pyproject.toml requirements
+  before_script:
+    - apt-get update
+    - apt-get --yes install graphviz
+    - pip install --upgrade pip  # Upgrade pip to avoid warnings
+    - pip install poetry  # Installer Poetry
+  script:
+    - poetry config virtualenvs.in-project true  # Ensure virtualenv is created in project directory
+    - poetry install --verbose  # Installer les dépendances du projet
+    - cd ./docs
+    - poetry run make html  # Construire la documentation
+  artifacts:
+    paths:
+      - docs/build/html  # Sauvegarder le répertoire build/docs comme artefact
+    expire_in: 1 week  # Les artefacts expirent après une semaine
+
+# Étape pour déployer sur GitLab Pages
+pages:
+  stage: deploy
+  image: alpine:latest  # Image légère pour le déploiement
+  script:
+    - mv docs/build/html public  # Déplacer build/docs vers public (requis pour GitLab Pages)
+  artifacts:
+    paths:
+      - public  # Publier le contenu du répertoire public
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'  # Ne déployer que sur la branche principale (par exemple, main)
