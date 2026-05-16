@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-EOQUAL Metrics documentation
-========================
+eoqual-metrics documentation
+============================
 
 Cette documentation a été générée automatiquement à partir du code source.
 

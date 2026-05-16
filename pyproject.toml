@@ -25,10 +25,9 @@ url = "https://pypi.org/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
-name = "zMetrics"
-url = "https://git.oamcloud.uk/api/packages/olivier/pypi"
+name = "eoqual-metrics"
+#url = "https://git.oamcloud.uk/api/packages/olivier/pypi"
 priority = "supplemental"
-
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"

@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'EOQUAL Metrics'
+project = 'eoqual-metrics'
 copyright = ''
 author = 'Olivier Amram'
 release = '0.1'
@@ -38,7 +38,7 @@ html_css_files = [
 
 inheritance_graph_attrs = dict(rankdir="TB", size='""')
 
-autoapi_dirs = ['../../src/metrics']
+autoapi_dirs = ['../../src/eoqual/metrics']
 autoapi_type = "python"
 autoapi_template_dir = "_templates/autoapi"
 autoapi_keep_files = True
