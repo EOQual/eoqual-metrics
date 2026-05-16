@@ -67,9 +67,6 @@ Other metrics:
 - uqi (Universal Quality Index): Combines luminance, contrast, and correlation comparisons.
 - vif (Visual Information Fidelity): Measures the information fidelity between a reference and distorted image.
 
-Not yet : bsn, isnr \
-Ne fonctione pas : nqm
-
 ## No-Reference IQA or Blind IQA (Blind Image Quality Assessment - BIQA)
 - brisque (Blind/Referenceless Image Spatial Quality Evaluator)
 - entropy
@@ -118,3 +115,15 @@ None
 - VIF
     - [https://programtalk.com/vs2/?source=python%2F341%2Fvideo-quality#]
     - [https://github.com/abhinaukumar/vif/blob/main/vif_utils.py]
+
+
+## TDC
+
+Not yet
+- bsn
+- isnr
+- pyiqa...
+
+Does not work
+- nqm
+
