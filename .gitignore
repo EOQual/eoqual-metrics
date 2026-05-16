@@ -41,6 +41,10 @@ __pycache__/
 ehthumbs.db
 Thumbs.db
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e122f8eb47da3b491b562288973a70d849de4852
 # Distribution / packaging
 .Python
 env/
@@ -117,7 +121,10 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+<<<<<<< HEAD
 __env__/
+=======
+>>>>>>> e122f8eb47da3b491b562288973a70d849de4852
 
 # Spyder project settings
 .spyderproject
@@ -133,11 +140,23 @@ poetry.lock
 
 # Cookiecutter folders #
 ########################
+<<<<<<< HEAD
 /__A_TRIER__/
+=======
+>>>>>>> e122f8eb47da3b491b562288973a70d849de4852
 /data/
 /figures/
 /output/
 
+<<<<<<< HEAD
 # pyReso #
 ##########
 saved_psfs
+=======
+
+# Temporary files and folders
+/docs/source/autoapi/
+/docs/source/_templates/
+/quality/__env__/
+
+>>>>>>> e122f8eb47da3b491b562288973a70d849de4852
