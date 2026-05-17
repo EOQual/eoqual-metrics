@@ -9,7 +9,7 @@
 project = 'eoqual-metrics'
 copyright = ''
 author = 'Olivier Amram'
-release = '0.1'
+release = '0.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
