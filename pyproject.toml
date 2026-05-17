@@ -13,7 +13,7 @@ readme = "README.md"
 license = "MIT"
 #include = ["CHANGELOG.md"]
 keywords = ["metrics", "image"]
-packages = [{include = "eoqual_metrics", from = "src"}]
+packages = [{include = "eoqual/metrics", from = "src"}]
 exclude = [
     "**/__pycache__",
     "**/.DS_Store"
