@@ -19,16 +19,6 @@ exclude = [
     "**/.DS_Store"
 ]
 
-[[tool.poetry.source]]
-name = "pypi-public"
-url = "https://pypi.org/simple/"
-priority = "primary"
-
-[[tool.poetry.source]]
-name = "eoqual-metrics"
-#url = "https://git.oamcloud.uk/api/packages/olivier/pypi"
-priority = "supplemental"
-
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
 cookiecutter = "^2.1.1"
