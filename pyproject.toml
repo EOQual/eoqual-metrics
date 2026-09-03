@@ -1,0 +1,115 @@
+# Documentation de poetry: https://python-poetry.org/docs/pyproject/
+
+[tool.poetry]
+name = "eoqual-metrics"
+version = "1.0.0"
+description = "Collection of image metrics"
+authors = ["Olivier Amram <olivier.amram@free.fr>"]
+maintainers = [
+    "Olivier Amram <olivier.amram@free.fr>"
+]
+repository = "https://github.com/EOQual/eoqual-metrics.git"
+readme = "README.md"
+license = "MIT"
+#include = ["CHANGELOG.md"]
+keywords = ["metrics", "image"]
+packages = [{include = "eoqual/metrics", from = "src"}]
+exclude = [
+    "**/__pycache__",
+    "**/.DS_Store"
+]
+
+[[tool.poetry.source]]
+name = "pypi-public"
+url = "https://pypi.org/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "eoqual-metrics"
+#url = "https://git.oamcloud.uk/api/packages/olivier/pypi"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+cookiecutter = "^2.1.1"
+numpy = "*"
+scipy = "*"
+scikit-image = ">0.20.0"
+scikit-learn = "*"
+opencv-python = "*"
+joblib = "*"
+# pyfftw : Necessaire a image-similarity-measures
+pyfftw = {git = "https://github.com/pyFFTW/pyFFTW.git"}
+sewar = "*"
+#image-similarity-measures = "*" # A installer manuellement
+matplotlib = "^3.5.0"
+# cpbd : shim de compatibilité géré à l'exécution, voir
+# backends/perceptual/cpbd.py::_ensure_cpbd_importable.
+cpbd = "^1.0.7"
+pyrtools = "^1.0.1"
+rich = "*"
+loguru = "*"
+
+# metrikz : Inclus dans le source ?
+# metrikz = {git = "https://gitlab.com/gpds-unb/pymetrikz"}
+
+# --- Dépendances "deep learning" (extra optionnel, voir [tool.poetry.extras]) ---
+# piq (https://github.com/photosynthesis-team/piq, Apache-2.0,
+# activement plus simple à maintenir que IQA_pytorch) est le backend par
+# défaut pour dists/fsim/gmsd/vif/ssim/msssim/vsi/lpips_vgg. Ne dépend que
+# de torchvision (pas de poids supplémentaires téléchargés au setup —
+# DISTS/LPIPS téléchargent leurs poids VGG16 au premier appel, voir
+# backends/piq/common.py). Attention : `pyiqa` (chaofengc/IQA-PyTorch),
+# une autre bibliothèque explorée un temps (tests/exploratory/pyiqa_rejected_exploration.py), est sous
+# licence PolyForm-Noncommercial-1.0.0 — PAS open-source, usage commercial
+# interdit — volontairement écarté au profit de piq (voir
+# THIRD_PARTY_LICENSES.md).
+#
+# IQA_pytorch (https://github.com/dingkeyan93/IQA-optimization, MIT) reste
+# disponible en algo legacy — seul backend encore utile pour `nlpd` (piq
+# n'a pas d'implémentation) ; `mad` reste inutilisable quel que soit le
+# backend (ni piq ni IQA_pytorch fonctionnel — voir config.py). Limitations
+# connues d'IQA_pytorch (non maintenu depuis ~2021) :
+# - torch >= 1.8.0   : lpips_vgg, mad, vsi totalement inutilisables via ce backend
+# - torch >= 2.3.1   : l'algo 'IQA_pytorch' de cw_ssim casse également
+#   (non par défaut : cw_ssim utilise 'cw_ssim_1' par défaut).
+# Bornes torch choisies pour rester sous 2.3.1 (limite IQA_pytorch/cw_ssim)
+# tout en supportant Python 3.12 ; piq lui-même n'impose pas cette borne
+# (à desserrer si IQA_pytorch est un jour retiré entièrement).
+torch = {version = ">=2.1,<2.3.1", optional = true}
+torchvision = {version = ">=0.16,<0.18", optional = true}
+piq = {version = "*", optional = true}           # https://github.com/photosynthesis-team/piq
+IQA_pytorch = {version = "*", optional = true}   # https://github.com/dingkeyan93/IQA-optimization — legacy
+
+image-quality = {version="*", optional=true}
+brisque = {version="^0.0.15", optional=true}
+#pywavelets = "^1.8.0"
+Pywavelets = "*"
+pandas = "^2.2.3"
+
+[tool.poetry.extras]
+# conda install -c conda-forge libsvm <> pip install libsvm
+svm = ["image-quality", "brisque"]
+# Métriques perceptuelles à base de réseaux profonds (dists, fsim/gmsd/vif/
+# ssim/msssim/vsi/lpips_vgg via piq ; nlpd via IQA_pytorch legacy) :
+# dépendances lourdes (~GB) volontairement exclues de l'installation par
+# défaut. pip install "eoqual-metrics[deep]"
+deep = ["torch", "torchvision", "piq", "IQA_pytorch"]
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinx-autoapi = "*"
+
+[tool.poetry.group.dev.dependencies]
+poetry = "^2.1.1"
+ipython = "^8.8.0"
+black = "^23.3.0"
+coverage = "^6.5.0"
+pylint = "*"
+pytest = "<9"
+deepdiff = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
