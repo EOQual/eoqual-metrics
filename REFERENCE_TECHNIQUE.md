@@ -440,8 +440,10 @@ d'être retouchée à chaque évolution de ce type — un coût d'entretien
 prématuré par rapport à la valeur immédiate. `quality/run_tests.sh` reste
 pointé sur `tests/` (commentaire à jour dans le script) : il ne collecte
 rien pour l'instant, sans être cassé pour autant — prêt à l'emploi le jour
-où une suite y sera ajoutée. La CI (`.gitlab-ci.yml`) construit la
-documentation (Sphinx + autoapi) mais ne lance aucun test.
+où une suite y sera ajoutée. Le workflow CI
+(`.github/workflows/docs.yml`) construit et publie la documentation
+(Sphinx + autoapi) sur GitHub Pages à chaque push sur `main`, mais ne
+lance aucun test.
 
 ---
 
