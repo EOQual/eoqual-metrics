@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/eoqual.png" alt="EOQual" width="280">
+  <img src="resources/eoqual_cropped.png" alt="EOQual" width="280">
 </p>
 
 # eoqual-metrics
