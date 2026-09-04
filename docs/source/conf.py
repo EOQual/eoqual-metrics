@@ -38,6 +38,8 @@ language = 'fr'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_logo = '_static/img/eoqual-logo.png'
+html_favicon = '_static/img/eoqual-favicon.png'
 
 html_css_files = [
     'css/custom.css',

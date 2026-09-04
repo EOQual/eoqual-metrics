@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="resources/eoqual_logo_transparent.png" alt="EOQual" width="280">
+</p>
+
 # eoqual-metrics
 
 Collection de métriques de qualité image (Full-Reference, No-Reference),
