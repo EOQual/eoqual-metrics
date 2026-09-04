@@ -1,5 +1,22 @@
 """
 Estimation d'un noyau de flou (PSF) par profils d'arêtes.
+
+Reprend l'idée générale de :
+
+    J. Anger, C. de Franchis, G. Facciolo, "Assessing the Sharpness of
+    Satellite Images: Study of the PlanetScope Constellation",
+    IGARSS 2019 — estimer un noyau de flou puis en tirer un score de
+    netteté absolu via sa norme (``score = ‖k‖`` : plus le noyau est
+    concentré, plus l'image est nette).
+
+**Ce n'est pas une réimplémentation de leur méthode d'estimation.** Le
+papier estime le noyau par déconvolution aveugle itérative (a priori de
+parcimonie sur le gradient, Pan et al. 2015) — un algorithme d'optimisation
+non convexe, coûteux à réimplémenter et à valider sans code de référence.
+Le noyau utilisé ici est estimé beaucoup plus simplement, par moyenne de
+profils d'intensité le long de la normale locale à des arêtes fortes
+détectées par Canny (line-spread function). Le principe de scoring
+(norme du noyau) est conservé, pas la méthode d'estimation.
 """
 from __future__ import annotations
 

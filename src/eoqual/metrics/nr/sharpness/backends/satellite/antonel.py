@@ -2,6 +2,21 @@
 Mesure de netteté Antonel — métrique composite robuste aux variations
 d'exposition, conçue pour l'imagerie satellite.
 
+Implémentation clean-room d'après la description de :
+
+    L. G. Antonel, "A Novel No-Reference Image Quality Metric for
+    Assessing Sharpness in Satellite Imagery", arXiv:2410.10488, 2024.
+
+Les étapes (dénoyautage, masquage d'intensité, sélection des gradients
+forts par percentile, flou de référence, taux de décroissance normalisé
+par axe) et les valeurs par défaut (percentiles 98.5/99.5, noyau de
+référence 5×5 à σ=1) suivent le papier au plus près. Une limite connue :
+l'indicateur de représentativité décrit en §3.6 du papier (calculé sur
+une image floutée séparément avec un noyau 3× plus grand, σ=5, pour
+détecter nuages/zones sans arête) n'est **pas** implémenté ici, faute de
+code de référence ou d'exemple numérique pour en valider une
+réimplémentation avec confiance — voir la note sur ``Rx``/``Ry``
+ci-dessous.
 """
 from __future__ import annotations
 
@@ -68,8 +83,12 @@ def antonel(
         plus nette.
     Dict[str, float], optional
         ``{"score", "Sx", "Sy", "Rx", "Ry"}`` si ``return_details=True`` —
-        ``Sx``/``Sy`` sont les composantes directionnelles du score,
-        ``Rx``/``Ry`` la moyenne absolue des gradients forts par axe.
+        ``Sx``/``Sy`` sont les composantes directionnelles du score.
+        ``Rx``/``Ry`` sont la moyenne absolue des gradients forts par axe
+        (utile pour du diagnostic) — **ce n'est pas** l'indicateur de
+        représentativité du papier (§3.6), qui n'est pas implémenté ici
+        (voir note en tête de module) ; ne pas l'utiliser comme un filtre
+        de fiabilité du score.
 
     Examples
     --------
@@ -117,13 +136,18 @@ def antonel(
     mask_x = np.abs(gx_s) > 0
     mask_y = np.abs(gy_s) > 0
 
+    # Taux de décroissance par gradient puis moyenne (éq. 10-13 du papier :
+    # Sx = 100 * mean(ΔGx_i), ΔGx_i = (Gx_i - GBx_i) / Gx_i) — et non un
+    # ratio des moyennes, qui n'est pas équivalent en général.
     if np.any(mask_x):
-        delta = np.abs(gx_s[mask_x]) - np.abs(gx_b[mask_x])
-        sx = 100.0 * np.mean(delta) / (np.mean(np.abs(gx_s[mask_x])) + 1e-8)
+        num = np.abs(gx_s[mask_x]) - np.abs(gx_b[mask_x])
+        denom = np.abs(gx_s[mask_x]) + 1e-8
+        sx = 100.0 * np.mean(num / denom)
 
     if np.any(mask_y):
-        delta = np.abs(gy_s[mask_y]) - np.abs(gy_b[mask_y])
-        sy = 100.0 * np.mean(delta) / (np.mean(np.abs(gy_s[mask_y])) + 1e-8)
+        num = np.abs(gy_s[mask_y]) - np.abs(gy_b[mask_y])
+        denom = np.abs(gy_s[mask_y]) + 1e-8
+        sy = 100.0 * np.mean(num / denom)
 
     score = float(0.5 * (sx + sy))
     if not return_details:

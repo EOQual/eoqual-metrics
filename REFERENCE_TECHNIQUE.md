@@ -288,9 +288,17 @@ sensibles au contenu de la scène) :
   d'un jeu d'implémentations pensé pour l'imagerie EO.
 - `antonel` : décroissance de gradient normalisée avant/après flou de
   référence, par axe (Sx/Sy) — robuste au bruit/exposition, diagnostic
-  de flou anisotrope (bougé).
+  de flou anisotrope (bougé). Implémentation clean-room fidèle à Antonel,
+  "A Novel No-Reference Image Quality Metric for Assessing Sharpness in
+  Satellite Imagery", arXiv:2410.10488, 2024 — à l'exception de
+  l'indicateur de représentativité du papier (§3.6), non implémenté
+  (voir docstring du module).
 - `blur_kernel` : reconstruction d'une PSF 1-D moyenne par profils
-  d'arêtes, mesure sa largeur à mi-hauteur (FWHM).
+  d'arêtes, mesure sa largeur à mi-hauteur (FWHM). Reprend le principe de
+  scoring (norme du noyau) de Anger, de Franchis, Facciolo, "Assessing
+  the Sharpness of Satellite Images: Study of the PlanetScope
+  Constellation", IGARSS 2019 — mais avec une estimation de noyau bien
+  plus simple que leur déconvolution aveugle itérative (voir docstring).
 - **`aem`** (Automatic Edge Method) : méthode du bord incliné
   (*slanted-edge*, ISO 12233) appliquée à des arêtes naturelles
   auto-détectées (PCA : longueur, angle 2°-15°, rectitude), sans mire de
