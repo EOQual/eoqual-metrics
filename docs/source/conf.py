@@ -45,7 +45,7 @@ html_css_files = [
 
 inheritance_graph_attrs = dict(rankdir="TB", size='""')
 
-autoapi_dirs = ['../../src/eoqual/metrics']
+autoapi_dirs = ['../../src']
 autoapi_type = "python"
 autoapi_template_dir = "_templates/autoapi"
 autoapi_keep_files = True
