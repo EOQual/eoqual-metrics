@@ -204,6 +204,14 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
         'metric_mode': 'FR',
         'lower_better': False,
     },
+    'jsd': {
+        'algo': [
+            {'name': 'numpy'},
+        ],
+        'default': 'numpy',
+        'metric_mode': 'FR',
+        'lower_better': True,
+    },
     # ------------------------------------------------------------------
     # Full-Reference — Perceptual
     # ------------------------------------------------------------------

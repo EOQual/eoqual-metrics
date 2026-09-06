@@ -1,7 +1,7 @@
 """
 Métriques de corrélation et statistiques — Full-Reference.
 
-Fonctions exposées : ``ncc``, ``ndp``, ``nmi``, ``scc``, ``uqi``.
+Fonctions exposées : ``ncc``, ``ndp``, ``nmi``, ``scc``, ``uqi``, ``jsd``.
 """
 from typing import Optional, Union
 
@@ -288,3 +288,126 @@ def uqi(
             return None
         return float(_uqi_ism(GT[..., np.newaxis], P[..., np.newaxis]))
     raise ValueError(f"'algo' inconnu : {algo!r}")
+
+
+def jsd(
+    GT: npt.NDArray,
+    P: npt.NDArray,
+    algo: str = "numpy",
+    bins: Optional[int] = None,
+) -> float:
+    """
+    Calcule la distance de Jensen-Shannon (JSD) entre les histogrammes d'intensité.
+
+    Version symétrisée et bornée de la divergence de Kullback-Leibler :
+    ``JSD(p, q) = sqrt(0.5 * KL(p‖m) + 0.5 * KL(q‖m))``, avec ``m = 0.5*(p+q)``
+    la distribution "moyenne". Contrairement à KL, ``JSD(p, q) == JSD(q, p)``
+    et ne nécessite aucun epsilon de secours : ``m`` ne s'annule jamais là où
+    ``p`` ou ``q`` est non nul. La racine carrée retournée ici est une
+    distance au sens mathématique (inégalité triangulaire, voir Lin (1991),
+    "Divergence measures based on the Shannon entropy", *IEEE Trans. Inf.
+    Theory*), convention identique à ``scipy.spatial.distance.jensenshannon``.
+
+    Compare les distributions globales d'intensité, indépendamment de toute
+    correspondance spatiale pixel à pixel — utile pour repérer un décalage
+    radiométrique global (exposition, calibration capteur, conditions
+    atmosphériques) entre deux acquisitions, y compris mal recalées.
+
+    Parameters
+    ----------
+    GT : npt.NDArray
+        Image de référence.
+    P : npt.NDArray
+        Image traitée / dégradée.
+    algo : str, optional
+        Algorithme à utiliser. Valeurs possibles :
+
+        * ``"numpy"`` (défaut)
+    bins : int, optional
+        Nombre de classes de l'histogramme. Si ``None`` (défaut), calculé
+        automatiquement par la règle de Freedman-Diaconis sur les valeurs
+        combinées des deux images (bornée à ``[16, 256]``) — un nombre de
+        classes fixe est bruité sur une petite image et grossier sur une
+        grande ; l'adaptation évite les deux écueils.
+
+    Returns
+    -------
+    float
+        Distance de Jensen-Shannon (base 2) dans ``[0, 1]``. ``0`` =
+        distributions d'intensité identiques. Une valeur plus faible
+        indique une meilleure qualité.
+
+    Raises
+    ------
+    ValueError
+        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> img = np.random.randint(0, 256, (64, 64)).astype(np.uint8)
+    >>> jsd(img, img)
+    0.0
+    """
+    GT, P = initial_check(GT, P)
+    if algo != "numpy":
+        raise ValueError(f"'algo' inconnu : {algo!r}")
+
+    gt_flat = GT.astype(np.float64).ravel()
+    p_flat = P.astype(np.float64).ravel()
+
+    lo = float(min(gt_flat.min(), p_flat.min()))
+    hi = float(max(gt_flat.max(), p_flat.max()))
+    if hi <= lo:
+        return 0.0  # les deux images sont constantes et de même valeur
+
+    n_bins = bins if bins is not None else _freedman_diaconis_bins(gt_flat, p_flat)
+    edges = np.linspace(lo, hi, n_bins + 1)
+    hist_gt, _ = np.histogram(gt_flat, bins=edges)
+    hist_p, _ = np.histogram(p_flat, bins=edges)
+
+    p_dist = hist_gt / hist_gt.sum()
+    q_dist = hist_p / hist_p.sum()
+    m_dist = 0.5 * (p_dist + q_dist)
+
+    jsd_value = 0.5 * _kl_div(p_dist, m_dist) + 0.5 * _kl_div(q_dist, m_dist)
+    return float(np.sqrt(max(jsd_value, 0.0)))  # max(...,0) : garde-fou aux erreurs d'arrondi
+
+
+def _kl_div(p: npt.NDArray, q: npt.NDArray) -> float:
+    """
+    Divergence de Kullback-Leibler ``KL(p‖q)`` en base 2.
+
+    Les classes où ``p == 0`` sont ignorées (convention ``0 * log(0/q) = 0``) ;
+    aucun epsilon n'est nécessaire pour ``q`` tant que ``q`` est la
+    distribution "moyenne" ``m`` utilisée par :func:`jsd` (jamais nulle là
+    où ``p`` est non nul).
+    """
+    mask = p > 0
+    return float(np.sum(p[mask] * np.log2(p[mask] / q[mask])))
+
+
+def _freedman_diaconis_bins(
+    a: npt.NDArray,
+    b: npt.NDArray,
+    min_bins: int = 16,
+    max_bins: int = 256,
+) -> int:
+    """
+    Nombre de classes d'histogramme par la règle de Freedman-Diaconis.
+
+    Utilise l'IQR (écart interquartile, robuste aux valeurs aberrantes —
+    contrairement à l'écart-type ou au min/max) des deux échantillons
+    combinés, pour que les deux histogrammes de :func:`jsd` partagent les
+    mêmes classes. Résultat borné à ``[min_bins, max_bins]`` pour éviter un
+    nombre de classes dégénéré (image quasi uniforme) ou excessif (grande
+    image, faisant chuter le poids statistique de chaque classe).
+    """
+    combined = np.concatenate([a, b])
+    q75, q25 = np.percentile(combined, [75, 25])
+    iqr = q75 - q25
+    bin_width = 2.0 * iqr / (combined.size ** (1.0 / 3.0))
+    data_range = combined.max() - combined.min()
+    if iqr <= 0 or bin_width <= 0:
+        return max_bins
+    return int(np.clip(np.ceil(data_range / bin_width), min_bins, max_bins))

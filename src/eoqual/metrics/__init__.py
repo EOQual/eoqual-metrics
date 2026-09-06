@@ -31,7 +31,7 @@ from .config import METRICS_CONFIGS  # noqa: F401
 from .fr.error import mae, mdae, mse, nrmse, rmse, rmse_sw  # noqa: F401
 from .fr.signal import snr, psnr, psnrb, psnrc, wsnr  # noqa: F401
 from .fr.ssim import ssim, msssim, cw_ssim  # noqa: F401
-from .fr.correlation import ncc, ndp, nmi, scc, uqi  # noqa: F401
+from .fr.correlation import ncc, ndp, nmi, scc, uqi, jsd  # noqa: F401
 from .fr.perceptual import (  # noqa: F401
     dists, fsim, gmsd, issm, lpips_vgg, mad, nlpd, pamse, reco, vif, vsi,
 )
@@ -70,7 +70,7 @@ __all__ = [
     # FR — ssim
     "ssim", "msssim", "cw_ssim",
     # FR — correlation
-    "ncc", "ndp", "nmi", "scc", "uqi",
+    "ncc", "ndp", "nmi", "scc", "uqi", "jsd",
     # FR — perceptual
     "dists", "fsim", "gmsd", "issm", "lpips_vgg", "mad", "nlpd",
     "pamse", "reco", "vif", "vsi",

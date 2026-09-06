@@ -111,13 +111,25 @@ toujours pleine image — voir §3.4 pour le tuilage NR).
 **Méthode** : `ncc`/`ndp` (corrélation croisée normalisée), `nmi`
 (information mutuelle normalisée — dépendance statistique, pas seulement
 linéaire), `scc` (corrélation spatiale), `uqi` (Universal Quality Index —
-combine luminance/contraste/corrélation, précurseur de SSIM).
+combine luminance/contraste/corrélation, précurseur de SSIM), `jsd`
+(distance de Jensen-Shannon — version symétrisée et bornée de la
+divergence de Kullback-Leibler, entre histogrammes d'intensité plutôt
+qu'entre pixels ; nombre de classes adaptatif par la règle de
+Freedman-Diaconis, voir docstring). Seule métrique de cette famille qui
+ignore toute correspondance spatiale pixel à pixel — utile pour repérer
+un décalage radiométrique global (exposition, calibration capteur,
+conditions atmosphériques) même sur des images mal recalées.
 
 **Implémentation** : `fr/correlation.py`. Défauts `numpy`/`skimage`/`sewar`/`metrikz`
 selon la métrique. `nmi` : seul algo `skimage`. `scc` : seul algo `sewar`.
+`jsd` : seul algo `numpy`.
 
 **Limites** : peu utilisées en pratique face à SSIM/PSNR — surtout utiles
-en recalage/imagerie multimodale (`nmi`, `ncc`).
+en recalage/imagerie multimodale (`nmi`, `ncc`). `jsd` : histogramme
+1-D global, insensible à toute réorganisation spatiale des pixels (deux
+images très différentes structurellement peuvent avoir des distributions
+d'intensité proches) — à utiliser en complément, pas en remplacement,
+des métriques structurelles/spatiales.
 
 ### 2.5 Perceptuelle (deep learning et modèles physiologiques)
 

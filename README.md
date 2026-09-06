@@ -130,7 +130,7 @@ list_metrics()  # tableau Rich : métrique, mode, algo par défaut, tous les alg
 | Structurelle (SSIM) | `ssim`, `msssim`, `cw_ssim` |
 | Erreur pixel-à-pixel | `mae`, `mdae`, `mse`, `nrmse`, `rmse`, `rmse_sw` |
 | Signal / bruit | `snr`, `psnr`, `psnrb`, `psnrc`, `wsnr` |
-| Corrélation | `ncc`, `ndp`, `nmi`, `scc`, `uqi` |
+| Corrélation | `ncc`, `ndp`, `nmi`, `scc`, `uqi`, `jsd` |
 | Perceptuelle | `dists`, `fsim`, `gmsd`, `issm`, `lpips_vgg`, `mad`, `nlpd`, `pamse`, `reco`, `vif`, `vsi` |
 | Spectrale / télédétection | `ergas`, `rase`, `sam`, `sre` |
 
