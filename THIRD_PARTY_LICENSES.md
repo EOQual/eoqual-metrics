@@ -97,7 +97,43 @@ joblib, rich, loguru, pandas, IQA_pytorch, piq), à l'exception de `cpbd`
 dont le classifieur PyPI indique « Other/Proprietary License » — à vérifier
 plus précisément si l'algo passe en utilisation production (voir §3).
 
-## 3. Pistes de remédiation restantes (facultatif)
+## 3. Méthodes non implémentées (roadmap)
+
+Ces métriques ne sont **pas encore portées** dans `eoqual-metrics` — issues
+d'une veille bibliographique interne (Hammou et al., "EGB: Image Quality
+Assessment Based on Ensemble of Gradient Boosting", CVPRW 2021, et
+références qu'il cite). `fsim`, `vsi` et `vif` sont déjà au catalogue (voir
+README §Catalogue) ; `mad` y figure aussi mais reste **non fonctionnel** en
+l'état, indépendamment de la dépendance installée (§2.3) — pas dupliqué
+ci-dessous.
+
+### 3.1 Code source disponible, non intégré
+
+| Méthode | Référence | Raison |
+|---|---|---|
+| **IFC** (Information Fidelity Criterion) | Sheikh, H. R., Bovik, A. C., de Veciana, G. (2005). "An information fidelity criterion for image quality assessment using natural scene statistics." IEEE TIP, 14(12), 2117-2128. | Précurseur de `vif` (même papier/même équipe, déjà au catalogue) : métrique plus simple, non extraite séparément. Code de référence potentiellement présent dans `pavancm/Visual-Information-Fidelity---Python` (source déjà utilisée pour `vif`, voir §2.2) — à vérifier. |
+| **PieAPP** (Perceptual Image-Error Assessment through Pairwise preference) | Prashnani, E., Cai, H., Mostofi, Y., Sen, P. (2018). "PieAPP: Perceptual image-error assessment through pairwise preference." IEEE CVPR, 1808-1817. | Modèle appris (réseau de préférence par paires), dépôt de référence disponible (`prashnani/PerceptualImageError`) mais nécessite un modèle pré-entraîné PyTorch — pas encore intégré. |
+| **VSNR** (Visual Signal-to-Noise Ratio) | Chandler, D. M., Hemami, S. S. (2007). "VSNR: A wavelet-based visual signal-to-noise ratio for natural images." IEEE TIP, 16(9), 2284-2298. Voir aussi Farrell, J. et al. (2010), "vSNR and pixel binning" (SPIE). | Code de référence en **MATLAB uniquement** (`sattarab/image-quality-tools`, dossier `metrix_mux/metrix/vsnr`), pas de portage Python identifié à ce jour. À ne pas confondre avec la méthode de destriping du même nom (`vsnr` dans `eoqual-destriping`, algorithme variationnel de suppression de rayures — sans rapport). |
+
+### 3.2 Aucun code source disponible (citation seule)
+
+| Méthode | Référence |
+|---|---|
+| **EGB** (Ensemble of Gradient Boosting) — *en cours d'étude* | Hammou, D. et al. (2021). "EGB: Image Quality Assessment Based on Ensemble of Gradient Boosting." IEEE CVPRW (NTIRE). |
+| **FSIMc** (variante chrominance de FSIM) | Zhang, L., Zhang, L., Mou, X., Zhang, D. (2011). "FSIM: A feature similarity index for image quality assessment." IEEE TIP, 20(8), 2378-2386. Non exposée par les implémentations FSIM actuellement utilisées (voir `fsim` au catalogue, §2.2). |
+| **GSM** (Gradient Similarity) | Liu, A., Lin, W., Narwaria, M. (2011). "Image quality assessment based on gradient similarity." IEEE TIP, 21(4), 1500-1512. |
+| **MA** | Ma, C., Yang, C.-Y., Yang, X., Yang, M.-H. (2017). "Learning a no-reference quality metric for single-image super-resolution." Computer Vision and Image Understanding, 158, 1-16. |
+| **PI** (Perceptual Index, benchmark PIRM) | Blau, Y., Michaeli, T. (2018). "The perception-distortion tradeoff." IEEE CVPR, 6228-6237. |
+| **RFSIM** (Riesz-transform Feature SIMilarity) | Zhang, L., Zhang, L., Mou, X. (2010). "RFSIM: A feature based image quality assessment metric using Riesz transforms." IEEE ICIP, 321-324. |
+| **SRSIM** (Spectral Residual SIMilarity) | Zhang, L., Li, H. (2012). "SR-SIM: A fast and high performance IQA index based on spectral residual." IEEE ICIP, 1473-1476. |
+| **SWD** | Gu, J., Cai, H., Chen, H., Ye, X., Ren, J., Dong, C. (2020). "Image quality assessment for perceptual image restoration: A new dataset, benchmark and metric." arXiv:2011.15002. |
+| **WaDIQaM** | Bosse, S., Maniry, D., Müller, K.-R., Wiegand, T., Samek, W. (2017). "Deep neural networks for no-reference and full-reference image quality assessment." IEEE TIP, 27(1), 206-219. |
+
+**Ressources générales** (bancs de comparaison susceptibles de couvrir
+plusieurs des métriques ci-dessus, non auditées individuellement) :
+`dingkeyan93/IQA-optimization`, `weizhou-geek/Image-Quality-Assessment-Benchmark`.
+
+## 4. Pistes de remédiation restantes (facultatif)
 
 Aucune n'est bloquante pour l'usage standard de la librairie (rien de ce qui
 suit n'est atteint par un appel « par défaut ») :
