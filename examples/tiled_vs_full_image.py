@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # ── 1. Pleine image ──────────────────────────────────────────────────
     # Un score unique, moyenné sur toute la scène.
-    score_full = m.sharpness(image, algo="tenengrad")
+    score_full = m.sharpness(image, algo="tenengrad_otsu")
     print(f"\nTenengrad (pleine image) : {score_full:.2f}")
 
     aem_full = aem(image)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # 2a. Métrique sans détail natif (tenengrad) : représentativité =
     #     variance de la tuile (comportement par défaut).
     df_tenengrad = m.compute_score_on_tiles(
-        image, partial(m.sharpness, algo="tenengrad"), tile_size=128, overlap=0.0,
+        image, partial(m.sharpness, algo="tenengrad_otsu"), tile_size=128, overlap=0.0,
     )
     print(f"\nTenengrad par tuiles ({len(df_tenengrad)} tuiles) :")
     print(f"  min={df_tenengrad['score'].min():.2f}  "

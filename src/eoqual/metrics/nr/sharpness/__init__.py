@@ -4,17 +4,32 @@ Module de métriques de netteté — No-Reference.
 Ce module regroupe toutes les métriques d'estimation de la netteté d'une image,
 organisées par famille algorithmique :
 
-* **Gradient** : ``tenengrad``, ``laplacian``, ``sobel``
+* **Gradient** : ``tenengrad_otsu``, ``laplacian``, ``sobel``
 * **Phase** : ``lpc_si``, ``sharpness_index``, ``psi``
 * **Spectral** : ``s3``, ``mtf``
-* **Perceptual** (librairie externe) : ``cpbd``
-* **Satellite** (calibré, remote sensing) : ``brenner``, ``fft``, ``antonel``,
-  ``blur_kernel``, ``wavelet``, ``aem``, ``sasbem`` — voir
+* **Perceptual** (librairie externe) : ``cpbd``, ``blur_effect``
+* **Satellite** (calibré, remote sensing) : ``brenner_vertical``, ``fft``,
+  ``antonel``, ``blur_kernel``, ``wavelet``, ``aem``, ``sasbem`` — voir
   :mod:`eoqual.metrics.nr.sharpness.backends.satellite`.
   ``aem``/``sasbem`` sont, avec ``mtf``,
   les seules métriques physiquement calibrées (MTF, ISO 12233) du module ;
   les autres sont des indicateurs rapides, non calibrés, sensibles au
   contenu de la scène.
+
+**Sur le sens du paramètre `algo` dans cette façade** : contrairement à la
+plupart des autres métriques du catalogue, où `algo=` sélectionne une
+implémentation alternative d'une même définition mathématique (ex.
+``psnr(algo="numpy")`` vs ``psnr(algo="sewar")`` calculent la même
+quantité), les valeurs d'`algo` ci-dessous sont des **méthodes de mesure
+différentes** — pas des implémentations interchangeables d'une même
+"netteté". Deux algos peuvent classer deux images dans un ordre différent ;
+voir `BIBLIOGRAPHY.md` pour la référence de chaque méthode.
+
+**Attention aux faux amis avec** :func:`eoqual.metrics.nr.focus_fmeasure.fmeasure` :
+``tenengrad_otsu``/``brenner_vertical``/``laplacian`` partagent une filiation
+historique avec ``fmeasure``'s ``TENG``/``BREN``/``LAPV`` respectivement,
+mais implémentent des formules différentes (voir la note de chaque module) —
+ce ne sont ni des doublons, ni des variantes interchangeables.
 
 La fonction façade :func:`sharpness` offre un point d'entrée unifié.
 """
@@ -26,7 +41,7 @@ from loguru import logger
 
 def sharpness(
     P: npt.NDArray,
-    algo: str = "tenengrad",
+    algo: str = "tenengrad_otsu",
 ) -> Optional[float]:
     """
     Calcule la netteté d'une image (No-Reference).
@@ -34,6 +49,13 @@ def sharpness(
     Façade unifiée pour toutes les métriques de netteté disponibles.
     Toutes les fonctions sous-jacentes acceptent une image en niveaux de gris
     (``float32`` ou ``float64``, valeurs dans ``[0, 1]`` recommandées).
+
+    .. note::
+       Contrairement aux autres métriques du catalogue, ``algo=`` ne
+       sélectionne pas ici une implémentation alternative d'une même
+       définition, mais une **méthode de mesure différente** — les
+       valeurs ne sont pas interchangeables. Voir la docstring du module
+       et `BIBLIOGRAPHY.md`.
 
     Parameters
     ----------
@@ -44,8 +66,9 @@ def sharpness(
 
         **Gradient-based :**
 
-        * ``"tenengrad"`` (défaut) — énergie du gradient Sobel (Krotkov 1987)
-        * ``"laplacian"`` — variance du Laplacien
+        * ``"tenengrad_otsu"`` (défaut) — énergie du gradient Sobel, seuillée
+          par la méthode d'Otsu (Krotkov 1987)
+        * ``"laplacian"`` — variance du Laplacien (noyau OpenCV 4-connexe)
         * ``"sobel"`` — moyenne absolue du gradient Sobel
 
         **Phase-based :**
@@ -62,10 +85,11 @@ def sharpness(
         **Perceptual (librairie externe) :**
 
         * ``"cpbd"`` — Cumulative Probability of Blur Detection
+        * ``"blur_effect"`` — variation de gradient avant/après reflou (Crété et al. 2007)
 
         **Satellite (calibré, remote sensing) :**
 
-        * ``"brenner"`` — variations abruptes entre pixels espacés
+        * ``"brenner_vertical"`` — variations abruptes entre pixels espacés, direction verticale (Brenner 1976)
         * ``"fft"`` — ratio d'énergie haute fréquence
         * ``"antonel"`` — décroissance de gradient robuste à l'exposition
         * ``"blur_kernel"`` — norme du noyau de flou estimé (PSF)
@@ -89,12 +113,12 @@ def sharpness(
     --------
     >>> import numpy as np
     >>> img = np.random.rand(256, 256).astype(np.float32)
-    >>> score = sharpness(img, algo='tenengrad')
+    >>> score = sharpness(img, algo='tenengrad_otsu')
     """
     # --- Gradient-based ---
-    if algo == "tenengrad":
-        from .backends.gradient.tenengrad import tenengrad
-        return tenengrad(P)
+    if algo == "tenengrad_otsu":
+        from .backends.gradient.tenengrad import tenengrad_otsu
+        return tenengrad_otsu(P)
     if algo == "laplacian":
         from .backends.gradient.laplacian import laplacian
         return laplacian(P)
@@ -125,11 +149,14 @@ def sharpness(
     if algo == "cpbd":
         from .backends.perceptual.cpbd import sharpness_cpbd
         return sharpness_cpbd(P)
+    if algo == "blur_effect":
+        from .backends.perceptual.blur_effect import blur_effect as _blur_effect
+        return _blur_effect(P)
 
     # --- Satellite (calibré, remote sensing) ---
-    if algo == "brenner":
-        from .backends.satellite.brenner import brenner
-        return brenner(P)
+    if algo == "brenner_vertical":
+        from .backends.satellite.brenner import brenner_vertical
+        return brenner_vertical(P)
     if algo == "fft":
         from .backends.satellite.fft import fft_sharpness
         return fft_sharpness(P)
@@ -151,9 +178,9 @@ def sharpness(
 
     raise ValueError(
         f"'algo' inconnu : {algo!r}. "
-        f"Valeurs valides : tenengrad, laplacian, sobel, lpc_si, sharpness_index, "
-        f"psi, s3, mtf, cpbd, "
-        f"brenner, fft, antonel, blur_kernel, wavelet, aem, sasbem."
+        f"Valeurs valides : tenengrad_otsu, laplacian, sobel, lpc_si, sharpness_index, "
+        f"psi, s3, mtf, cpbd, blur_effect, "
+        f"brenner_vertical, fft, antonel, blur_kernel, wavelet, aem, sasbem."
     )
 
 

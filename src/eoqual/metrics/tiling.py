@@ -40,7 +40,7 @@ variance de la tuile (comme dans ``sharpness_metrics`` à l'origine) et
 
 >>> from functools import partial
 >>> import eoqual.metrics as m
->>> df = compute_score_on_tiles(image, partial(m.sharpness, algo="tenengrad"))
+>>> df = compute_score_on_tiles(image, partial(m.sharpness, algo="tenengrad_otsu"))
 
 Limites / évolutions non implémentées ici
 ------------------------------------------
@@ -132,7 +132,7 @@ def compute_score_on_tiles(
         l'indice de fiabilité natif de la métrique), ou toute autre
         fonction respectant cette signature — y compris une métrique
         figée par ``functools.partial`` (ex.
-        ``partial(eoqual.metrics.sharpness, algo="tenengrad")``).
+        ``partial(eoqual.metrics.sharpness, algo="tenengrad_otsu")``).
     tile_size : int, optional
         Taille des tuiles carrées, en pixels. Par défaut ``256``. Si
         l'image est plus petite que ``tile_size`` dans une dimension,

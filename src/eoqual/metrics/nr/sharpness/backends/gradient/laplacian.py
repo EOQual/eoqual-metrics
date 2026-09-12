@@ -10,6 +10,15 @@ Référence
 ---------
 Pech-Pacheco, J. L., et al. *Diatom autofocusing in brightfield microscopy*.
 ICPR 2000.
+
+Ne pas confondre avec ``fmeasure(algo="LAPV")`` (voir
+:mod:`eoqual.metrics.nr.focus_fmeasure`) : même filiation (Pech-Pacheco et
+al. 2000, "variance du Laplacien"), mais noyau différent — cette
+implémentation utilise le noyau Laplacien 4-connexe par défaut d'OpenCV
+(``cv2.Laplacian``, ``[[0,1,0],[1,-4,1],[0,1,0]]``), alors que ``LAPV``
+utilise le noyau 8-connexe pondéré ``fspecial('laplacian', 0.2)`` de
+MATLAB, hérité de la table de référence Pertuz et al. (2013). Les deux
+scores ne sont donc pas comparables entre eux.
 """
 from __future__ import annotations
 import numpy as np

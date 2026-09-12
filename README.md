@@ -7,9 +7,10 @@
 Collection de métriques de qualité image (Full-Reference, No-Reference),
 pensée pour l'observation de la Terre — voir
 **[REFERENCE_TECHNIQUE.md](REFERENCE_TECHNIQUE.md)** pour le détail de
-chaque famille (méthode, implémentation, limites, évolutions envisagées)
-et **[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)** pour l'audit
-complet des licences du code tiers.
+chaque famille (méthode, implémentation, limites, évolutions envisagées),
+**[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)** pour la référence bibliographique
+de chaque méthode nommée, et **[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)**
+pour l'audit complet des licences du code tiers.
 
 ## Sommaire
 
@@ -134,8 +135,8 @@ list_metrics()  # tableau Rich : métrique, mode, algo par défaut, tous les alg
 | Perceptuelle | `dists`, `fsim`, `gmsd`, `issm`, `lpips_vgg`, `mad`, `nlpd`, `pamse`, `reco`, `vif`, `vsi` |
 | Spectrale / télédétection | `ergas`, `rase`, `sam`, `sre` |
 
-Détail de chaque métrique (principe, référence bibliographique) :
-**[REFERENCE_TECHNIQUE.md §2](REFERENCE_TECHNIQUE.md)**.
+Détail de chaque métrique (principe) : **[REFERENCE_TECHNIQUE.md §2](REFERENCE_TECHNIQUE.md)**.
+Référence bibliographique de chaque méthode nommée : **[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)**.
 
 ### No-Reference (NR) — évaluer une image seule
 
@@ -146,7 +147,7 @@ Détail de chaque métrique (principe, référence bibliographique) :
     - **Gradient** : `tenengrad`, `laplacian`, `sobel`
     - **Phase** : `lpc_si`, `sharpness_index`, `psi`
     - **Spectral** : `s3`, `mtf` (MTF légère, arêtes ponctuelles)
-    - **Perceptuel** (librairie externe) : `cpbd`
+    - **Perceptuel** (librairie externe) : `cpbd`, `blur_effect`
     - **Satellite** (calibré, remote sensing) : `brenner`, `fft`, `antonel`,
       `blur_kernel`, `wavelet`, `aem`, `sasbem` — `aem`/`sasbem` : MTF@Nyquist
       par slanted-edge method (ISO 12233) sur arêtes naturelles

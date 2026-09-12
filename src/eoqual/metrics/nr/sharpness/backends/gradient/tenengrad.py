@@ -1,50 +1,55 @@
 """
-Mesure de netteté Tenengrad basée sur les gradients de Sobel.
+Mesure de netteté Tenengrad basée sur les gradients de Sobel, avec seuillage.
 
 Référence
 ---------
 Krotkov, E. *Focusing*. Int J Comput Vision 1, 223–237 (1987).
 https://doi.org/10.1007/BF00127822
+
+Ne pas confondre avec ``fmeasure(algo="TENG")`` (voir
+:mod:`eoqual.metrics.nr.focus_fmeasure`) : même filiation (Krotkov), mais
+formule différente — ``TENG`` calcule ``mean(Gx² + Gy²)`` sans seuillage,
+alors que cette implémentation seuille la carte d'énergie avant de sommer
+(voir ``threshold``, par défaut Otsu). Les deux scores ne sont donc pas
+comparables entre eux.
 """
 from __future__ import annotations
 from typing import Optional, Tuple, Union
 import numpy as np
 import numpy.typing as npt
 from scipy import ndimage
-
-try:
-    from skimage.filters import threshold_otsu as _threshold_otsu
-    _SKIMAGE = True
-except ImportError:
-    _SKIMAGE = False
+from skimage.filters import threshold_otsu as _threshold_otsu
 
 
-def tenengrad(
+def tenengrad_otsu(
     image: npt.NDArray,
-    threshold: Optional[Union[float, str]] = "max_frac",
+    threshold: Optional[Union[float, str]] = "otsu",
     thresh_fraction: float = 0.2,
     window: Optional[int] = None,
     normalize: bool = False,
     return_map: bool = False,
 ) -> Union[float, Tuple[float, npt.NDArray]]:
     """
-    Calcule la mesure de netteté Tenengrad.
+    Calcule la mesure de netteté Tenengrad, seuillée (par défaut, Otsu).
 
     L'algorithme applique des filtres de Sobel, calcule la carte d'énergie
-    ``M = Gx² + Gy²``, applique un seuillage optionnel et retourne la somme
-    (ou moyenne) des énergies au-dessus du seuil.
+    ``M = Gx² + Gy²``, applique un seuillage (Otsu par défaut — méthode
+    non paramétrique, sans réglage arbitraire) et retourne la somme (ou
+    moyenne) des énergies au-dessus du seuil. Le seuillage est ce qui
+    distingue cette variante du Tenengrad "brut" de Krotkov (voir
+    ``fmeasure(algo="TENG")``, qui ne seuille pas).
 
     Parameters
     ----------
     image : npt.NDArray
         Image en niveaux de gris de shape ``(H, W)``.
-    threshold : float or {'max_frac', 'mean', 'median', 'otsu'} or None, optional
+    threshold : float or {'otsu', 'max_frac', 'mean', 'median'} or None, optional
         Méthode de seuillage appliquée à la carte d'énergie.
 
-        * ``"max_frac"`` (défaut) : ``thresh_fraction * max(M)``
+        * ``"otsu"`` (défaut) : seuil d'Otsu, sans paramètre à régler
+        * ``"max_frac"`` : ``thresh_fraction * max(M)``
         * ``"mean"`` : ``thresh_fraction * mean(M)``
         * ``"median"`` : ``thresh_fraction * median(M)``
-        * ``"otsu"`` : seuil d'Otsu (scikit-image requis)
         * ``None`` : aucun seuillage
         * ``float`` : seuil fixe
     thresh_fraction : float, optional
@@ -72,15 +77,13 @@ def tenengrad(
     ------
     ValueError
         Si ``threshold`` n'est pas reconnu.
-    ImportError
-        Si ``threshold='otsu'`` et scikit-image est absent.
 
     Examples
     --------
     >>> import numpy as np
     >>> img = np.random.rand(128, 128).astype(np.float32)
-    >>> score = tenengrad(img)
-    >>> score, M = tenengrad(img, return_map=True)
+    >>> score = tenengrad_otsu(img)
+    >>> score, M = tenengrad_otsu(img, return_map=True)
     """
     Gx = ndimage.sobel(image, axis=1)
     Gy = ndimage.sobel(image, axis=0)
@@ -95,16 +98,14 @@ def tenengrad(
         thresh_value = float(threshold)
     elif isinstance(threshold, str):
         s = threshold.lower()
-        if s == "max_frac":
+        if s == "otsu":
+            thresh_value = float(_threshold_otsu(M))
+        elif s == "max_frac":
             thresh_value = thresh_fraction * float(np.max(M))
         elif s == "mean":
             thresh_value = thresh_fraction * float(np.mean(M))
         elif s == "median":
             thresh_value = thresh_fraction * float(np.median(M))
-        elif s == "otsu":
-            if not _SKIMAGE:
-                raise ImportError("scikit-image est requis pour threshold='otsu'.")
-            thresh_value = float(_threshold_otsu(M))
         else:
             raise ValueError(f"Méthode de seuillage inconnue : {threshold!r}")
     else:

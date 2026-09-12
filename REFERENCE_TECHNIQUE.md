@@ -7,7 +7,9 @@ volontairement : **méthode** (que calcule-t-on, indépendamment du code) →
 **limites connues** → **évolutions envisagées**.
 
 Ce document ne remplace pas les docstrings (référence API précise,
-autoapi/Sphinx) ni `THIRD_PARTY_LICENSES.md` (audit des licences tierces,
+autoapi/Sphinx), `BIBLIOGRAPHY.md` (référence bibliographique complète de
+chaque méthode nommée — ce document-ci ne garde qu'un rappel court
+auteur/année) ni `THIRD_PARTY_LICENSES.md` (audit des licences tierces,
 document séparé) : il sert de carte d'ensemble pour comprendre *pourquoi*
 chaque famille existe et *où* la retrouver — à maintenir à chaque
 évolution notable du registre `config.py`.
@@ -215,7 +217,11 @@ le fichier modèle à chaque appel (voir §6).
 image floue = distribution resserrée). `fmeasure` : 27 opérateurs de
 mise au point issus de la littérature *shape-from-focus* (Pertuz et al.
 2013) — gradients (BREN, TENG, GRAT...), Laplaciens (LAPE, LAPM, LAPV...),
-ondelettes (WAVR, WAVS, WAVV), statistiques (GLVA, GLVN...), etc.
+ondelettes (WAVR, WAVS, WAVV), statistiques (GLVA, GLVN...), etc. Comme
+pour `sharpness` (§3.3), `algo=` sélectionne ici une méthode de mesure
+différente pour chaque valeur, pas une implémentation alternative d'une
+même définition — les 27 opérateurs ne sont pas interchangeables entre
+eux ; voir `BIBLIOGRAPHY.md`.
 
 **Implémentation** : `nr/focus.py` (`entropy`), `nr/focus_fmeasure.py`
 (`fmeasure`, `MEASURES_FOCUS` liste les 27 noms). Défaut `ACMO`. Chaque
@@ -231,15 +237,34 @@ préexistant, reproduit à l'identique, non corrigé.
 
 Point d'entrée unique `nr.sharpness.sharpness(P, algo=...)`, 17 algos.
 
+**Attention, `algo=` a ici un sens différent du reste du registre** : pour
+la plupart des métriques (`psnr`, `ssim`...), `algo=` sélectionne une
+implémentation alternative d'une même définition mathématique — les
+valeurs sont interchangeables. Pour `sharpness` (et `fmeasure`, §3.2),
+chaque `algo=` est une **méthode de mesure différente** : deux algos
+peuvent classer deux images dans un ordre différent. Voir
+`BIBLIOGRAPHY.md` pour la référence de chaque méthode, et la docstring du
+module pour les cas de faux-amis avec `fmeasure` (même filiation
+historique, formule différente : `tenengrad_otsu`/`TENG`,
+`laplacian`/`LAPV`, `brenner_vertical`/`BREN`).
+
+Audit de collision de noms effectué sur les 17×27 combinaisons
+`sharpness`×`fmeasure` (comparaison des formules, pas seulement des noms) :
+seuls ces trois cas partagent un nom suffisamment proche pour induire en
+erreur — les autres proximités conceptuelles (`sobel` vs `GRAT`/`GRAS`/
+`GRAE`, `wavelet` vs `WAVR`/`WAVS`/`WAVV`, `s3`/`mtf` vs `SFIL`/`SFRQ`)
+utilisent des formules ET des noms suffisamment distincts pour ne pas
+prêter à confusion.
+
 #### 3.3.a Gradient
 
 **Méthode** : énergie/amplitude des contours détectés par filtre de
-Sobel (`tenengrad`, Krotkov 1987 ; `sobel`) ou variance du Laplacien
-(`laplacian`, Pech-Pacheco et al. 2000 — répond aux variations
-d'intensité dans toutes les directions simultanément).
+Sobel (`tenengrad_otsu`, Krotkov 1987, seuillage Otsu ; `sobel`) ou
+variance du Laplacien (`laplacian`, Pech-Pacheco et al. 2000 — répond aux
+variations d'intensité dans toutes les directions simultanément).
 
 **Implémentation** : `backends/gradient/{tenengrad,laplacian,sobel}.py`.
-Originaux (pas de code vendored), défaut `tenengrad`.
+Originaux (pas de code vendored), défaut `tenengrad_otsu`.
 
 **Limites** : sensibles au bruit (un bruit fort produit lui-même un fort
 gradient local, indiscernable d'un vrai contour net) et au contenu de la
@@ -280,13 +305,29 @@ blocs fixe (32×32), non paramétrable depuis la façade.
 
 #### 3.3.d Perceptuelle (librairie externe)
 
-**Méthode** : `cpbd` (Cumulative Probability of Blur Detection, Narvekar
-& Karam 2011 — modèle psychophysique de détection du flou aux contours).
-Seul algo de cette sous-famille.
+**Méthode** :
+- `cpbd` (Cumulative Probability of Blur Detection, Narvekar & Karam
+  2011 — modèle psychophysique de détection du flou aux contours).
+- `blur_effect` (Crété, Dolmière, Ladret & Nicolas 2007 — reflou par
+  filtre moyenneur 1-D, comparaison de la variation entre pixels voisins
+  avant/après reflou, par axe ; validé par tests subjectifs ITU-R). Délègue
+  à `skimage.measure.blur_effect` (même publication citée dans sa
+  docstring) plutôt qu'une réimplémentation — scikit-image est déjà une
+  dépendance de base. Score inversé (`1 - score brut`) pour rester
+  cohérent avec la convention "plus élevé = plus net" du reste de la
+  façade `sharpness` (le score brut du papier est l'inverse : 0=net,
+  1=flou) — voir docstring de `blur_effect()` pour le détail et la
+  validation croisée contre `deepinv.loss.metric.BlurStrength`
+  (BSD-3-Clause, même référence bibliographique).
 
-**Implémentation** : `backends/perceptual/cpbd.py`.
+**Implémentation** : `backends/perceptual/cpbd.py`,
+`backends/perceptual/blur_effect.py`.
 
-**Limites** : dépendance non maintenue, shim de compatibilité (voir §3.3.f).
+**Limites** : `cpbd` — dépendance non maintenue, shim de compatibilité
+(voir §3.3.f). `blur_effect` — asymptote au-delà d'un flou moyen
+équivalent au filtre `filter_size` (11 par défaut) : au-delà, la métrique
+reste correcte dans son classement mais moins discriminante (voir
+docstring de `skimage.measure.blur_effect`).
 
 #### 3.3.e Satellite (calibré, remote sensing)
 
@@ -294,23 +335,20 @@ Seul algo de cette sous-famille.
 entre capteurs/dates/missions (hors métriques génériques ci-dessus,
 sensibles au contenu de la scène) :
 
-- `brenner`, `fft`, `wavelet` : indicateurs rapides non calibrés
+- `brenner_vertical`, `fft`, `wavelet` : indicateurs rapides non calibrés
   (variations abruptes espacées, énergie haute fréquence, énergie des
   sous-bandes en ondelettes) — mêmes limites que §3.3.a/c, mais issus
   d'un jeu d'implémentations pensé pour l'imagerie EO.
 - `antonel` : décroissance de gradient normalisée avant/après flou de
   référence, par axe (Sx/Sy) — robuste au bruit/exposition, diagnostic
-  de flou anisotrope (bougé). Implémentation clean-room fidèle à Antonel,
-  "A Novel No-Reference Image Quality Metric for Assessing Sharpness in
-  Satellite Imagery", arXiv:2410.10488, 2024 — à l'exception de
-  l'indicateur de représentativité du papier (§3.6), non implémenté
-  (voir docstring du module).
+  de flou anisotrope (bougé). Implémentation clean-room fidèle à Antonel
+  (2024) — à l'exception de l'indicateur de représentativité du papier
+  (§3.6), non implémenté (voir docstring du module).
 - `blur_kernel` : reconstruction d'une PSF 1-D moyenne par profils
   d'arêtes, mesure sa largeur à mi-hauteur (FWHM). Reprend le principe de
-  scoring (norme du noyau) de Anger, de Franchis, Facciolo, "Assessing
-  the Sharpness of Satellite Images: Study of the PlanetScope
-  Constellation", IGARSS 2019 — mais avec une estimation de noyau bien
-  plus simple que leur déconvolution aveugle itérative (voir docstring).
+  scoring (norme du noyau) de Anger et al. (2019) — mais avec une
+  estimation de noyau bien plus simple que leur déconvolution aveugle
+  itérative (voir docstring).
 - **`aem`** (Automatic Edge Method) : méthode du bord incliné
   (*slanted-edge*, ISO 12233) appliquée à des arêtes naturelles
   auto-détectées (PCA : longueur, angle 2°-15°, rectitude), sans mire de
@@ -363,7 +401,7 @@ représentativité par tuile — repris de l'ancien moteur de tuilage de
 un backend direct (`aem`, `sasbem`, `mtf`, `antonel`, `blur_kernel`, avec
 `method_kwargs={"return_details": True}` pour l'indice de fiabilité natif)
 ou n'importe quelle métrique figée par `functools.partial` (ex.
-`partial(m.sharpness, algo="tenengrad")`). Représentativité par défaut :
+`partial(m.sharpness, algo="tenengrad_otsu")`). Représentativité par défaut :
 variance de la tuile ; recouvrement automatique par `n_edges`/`reliability`
 pour `aem`/`sasbem`/`mtf`, par `1/fwhm` pour `blur_kernel`. Log résumé
 unique par (image, métrique) plutôt qu'un message par tuile.

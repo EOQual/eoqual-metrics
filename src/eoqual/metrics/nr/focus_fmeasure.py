@@ -73,7 +73,12 @@ def _acmo(image: npt.NDArray) -> float:
 
 
 def _bren(image: npt.NDArray) -> float:
-    """BREN — mesure de Brenner (Santos et al., 1997)."""
+    """BREN — mesure de Brenner bidirectionnelle (Santos et al., 1997).
+
+    Ne pas confondre avec ``sharpness(algo="brenner_vertical")``, qui
+    reprend la définition originale de Brenner (1976), verticale
+    uniquement. Scores non comparables.
+    """
     dh = np.zeros_like(image)
     dv = np.zeros_like(image)
     dv[:-2, :] = image[2:, :] - image[:-2, :]
@@ -218,7 +223,11 @@ def _lapm(image: npt.NDArray) -> float:
 
 
 def _lapv(image: npt.NDArray) -> float:
-    """LAPV — variance du Laplacien (Pech-Pacheco et al., 2000)."""
+    """LAPV — variance du Laplacien, noyau Pertuz/MATLAB (Pech-Pacheco et al., 2000).
+
+    Ne pas confondre avec ``sharpness(algo="laplacian")``, qui utilise le
+    noyau 4-connexe par défaut d'OpenCV. Scores non comparables.
+    """
     fm = convolve(image, _LAPLACIAN_KERNEL, mode="nearest")
     return float(np.var(fm))
 
@@ -251,7 +260,11 @@ def _sobel_gradients(image: npt.NDArray) -> tuple:
 
 
 def _teng(image: npt.NDArray) -> float:
-    """TENG — Tenengrad (Krotkov, 1986)."""
+    """TENG — Tenengrad brut, sans seuillage (Krotkov, 1986).
+
+    Ne pas confondre avec ``sharpness(algo="tenengrad_otsu")``, qui
+    seuille la carte d'énergie avant de sommer. Scores non comparables.
+    """
     gx, gy = _sobel_gradients(image)
     return float(np.mean(gx ** 2 + gy ** 2))
 

@@ -441,7 +441,7 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'sharpness': {
         'algo': [
             # Gradient-based
-            {'name': 'tenengrad'},
+            {'name': 'tenengrad_otsu'},
             {'name': 'laplacian'},
             {'name': 'sobel'},
             # Phase-based
@@ -453,8 +453,9 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
             {'name': 'mtf', 'only': 'GRAY'},
             # Perceptual (external lib)
             {'name': 'cpbd', 'only': 'GRAY'},
+            {'name': 'blur_effect', 'only': 'GRAY'},
             # Satellite (calibré, remote sensing)
-            {'name': 'brenner', 'only': 'GRAY'},
+            {'name': 'brenner_vertical', 'only': 'GRAY'},
             {'name': 'fft', 'only': 'GRAY'},
             {'name': 'antonel', 'only': 'GRAY'},
             {'name': 'blur_kernel', 'only': 'GRAY'},
@@ -462,7 +463,7 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
             {'name': 'aem', 'only': 'GRAY'},
             {'name': 'sasbem', 'only': 'GRAY'},
         ],
-        'default': 'tenengrad',
+        'default': 'tenengrad_otsu',
         'metric_mode': 'NR',
         'lower_better': False,
     },
