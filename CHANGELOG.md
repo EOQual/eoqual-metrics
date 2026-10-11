@@ -2,6 +2,32 @@
 
 ## Version History
 
+Non publié
+
+:   -   `sharpness_index` réécrit : calcul en float64 (écart relatif ~6e-5 avec
+        l'ancienne version, qui travaillait en float32), suppression d'un
+        `print` de débogage et de l'arrêt du processus à l'import
+        (`logger.catch` + `sys.exit`) ; nouvelle fonction
+        `sharpness_stats` (μ, σ, z, TV, SI) ; `pmode` hors de 0..3 lève
+        une `ValueError`. Même nom, même paramètre, même défaut.
+    -   Premier test automatisé de l'indice
+        (`tests/test_sharpness_index.py`) : moments validés par
+        Monte-Carlo, décroissance avec le flou et le bruit.
+    -   **Dépendance à eoqual-core** (épinglée sur `v0.1.0`) : la
+        décomposition périodique et la déquantification de l'indice SI
+        (`eoqual.core.fourier`), le binning de l'ESF, la MTF, la
+        MTF@Nyquist, la MTF50 et la FWHM d'`aem`/`sasbem`
+        (`eoqual.core.edge`), le découpage en tuiles
+        (`eoqual.core.tiling`). Scores `aem`/`sasbem`, MTF@Nyquist, MTF50,
+        SI et tuiles inchangés (écarts ≤ 1e-9).
+    -   **Correction de la FWHM** d'`aem`/`sasbem` (détails
+        `return_details`) : calculée sur la LSF lissée d'un demi-pixel,
+        par la première traversée du demi-maximum autour du pic.
+        L'ancienne valeur (premier/dernier point au-dessus du seuil sur
+        tout le profil, sans interpolation) dépassait 15 px sur un rebond
+        de bruit ; les nouvelles valeurs sont cohérentes avec le flou
+        simulé (ex. ~2.5 px pour une PSF gaussienne de σ = 1 px).
+
 1.1.0 (2026-09-12)
 
 :   -   **Rupture (sans rétrocompatibilité)** : `sharpness(algo="tenengrad")`

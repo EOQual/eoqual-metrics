@@ -18,8 +18,11 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.ndimage import gaussian_filter1d
 from skimage.feature import canny
 from skimage.measure import label, regionprops
+
+from eoqual.core import edge as core_edge
 
 from .....core.image_utils import normalize_histogram
 
@@ -106,52 +109,49 @@ def _project_edge_profile(
 
     offsets = t_perp[band_mask]
     values = image[rr[band_mask], cc[band_mask]]
-
-    bin_width = 1.0 / oversample
-    bin_edges = np.arange(-half_width, half_width + bin_width, bin_width)
-    bin_idx = np.clip(np.digitize(offsets, bin_edges) - 1, 0, len(bin_edges) - 2)
-
-    esf = np.full(len(bin_edges) - 1, np.nan)
-    for b in np.unique(bin_idx):
-        esf[b] = values[bin_idx == b].mean()
-
-    valid = ~np.isnan(esf)
-    if valid.sum() < 0.5 * len(esf):
-        return None
-    esf = np.interp(np.arange(len(esf)), np.flatnonzero(valid), esf[valid])
-    return esf
+    return core_edge.bin_profile(offsets, values, half_width, oversample)
 
 
 def _mtf_from_esf(esf: NDArray[np.floating], oversample: int) -> Optional[Dict[str, float]]:
-    """LSF (dérivée de l'ESF) -> fenêtrage de Hann -> FFT -> courbe MTF normalisée (DC = 1)."""
+    """
+    LSF (dérivée de l'ESF) -> fenêtrage de Hann -> FFT zéro-paddée -> MTF
+    normalisée en fréquence nulle, puis MTF@Nyquist, MTF50 et FWHM.
+
+    Calcul de MTF et grandeurs dérivées délégués à :mod:`eoqual.core.edge`
+    (partagés avec eoqual-measure).
+
+    FWHM : calculée sur la LSF lissée par une gaussienne d'un demi-pixel
+    d'écart-type (``oversample / 2`` échantillons), puis par la première
+    traversée du demi-maximum de part et d'autre du pic. Le lissage est
+    nécessaire : la dérivée d'une ESF sur-échantillonnée par binning
+    présente des dents de scie (bins vides interpolés, bruit), dont un pic
+    isolé ramènerait la FWHM à un seul échantillon (~0.3 px). Il élargit la
+    FWHM d'environ 0.1-0.2 px pour des flous usuels. L'ancienne définition
+    (premier et dernier point au-dessus du demi-maximum sur tout le profil)
+    surestimait au contraire la largeur dès qu'un rebond de bruit, même
+    loin du pic, repassait au-dessus du seuil (jusqu'à 15 px observés).
+    """
     lsf = np.diff(esf)
     if np.abs(lsf).sum() < 1e-8:
         return None
-    window = np.hanning(len(lsf))
-    lsf_w = lsf * window
+    lsf_w = lsf * np.hanning(len(lsf))
     lsf_w = lsf_w / (np.abs(lsf_w).sum() + 1e-12)
 
-    n_fft = max(512, 8 * len(lsf_w))
-    mtf_raw = np.abs(np.fft.rfft(lsf_w, n=n_fft))
-    freqs = np.fft.rfftfreq(n_fft, d=1.0 / oversample)  # cycles/pixel
-    mtf_norm = mtf_raw / (mtf_raw[0] + 1e-12)
+    dx = 1.0 / oversample
+    freqs, mtf = core_edge.lsf_to_mtf(lsf_w, dx, n_fft=max(512, 8 * len(lsf_w)))  # cycles/pixel
 
-    mtf_nyquist = float(np.interp(0.5, freqs, mtf_norm))
+    mtf_nyquist = core_edge.mtf_at(freqs, mtf, 0.5)
+    mtf50 = core_edge.frequency_at(freqs, mtf, 0.5)
+    if np.isnan(mtf50):
+        mtf50 = 0.5  # MTF jamais sous 0.5 avant Nyquist : plafonnée à Nyquist
 
-    below_half = np.where(mtf_norm <= 0.5)[0]
-    if len(below_half) > 0 and below_half[0] > 0:
-        i1, i2 = below_half[0] - 1, below_half[0]
-        f1, f2 = freqs[i1], freqs[i2]
-        m1, m2 = mtf_norm[i1], mtf_norm[i2]
-        mtf50 = f1 + (0.5 - m1) * (f2 - f1) / (m2 - m1 + 1e-12)
-    else:
-        mtf50 = 0.5
+    x = np.arange(len(lsf_w)) * dx
+    lsf_smooth = gaussian_filter1d(lsf_w, oversample / 2.0)
+    fwhm_px = core_edge.fwhm(x, np.abs(lsf_smooth))
+    if fwhm_px == 0.0:  # demi-maximum non retraversé d'un côté (pic en bord de profil)
+        fwhm_px = float(len(lsf_w) * dx)
 
-    half_max = np.abs(lsf_w).max() / 2
-    above = np.where(np.abs(lsf_w) >= half_max)[0]
-    fwhm_px = float((above[-1] - above[0] + 1) / oversample) if len(above) > 1 else float(len(lsf_w) / oversample)
-
-    return {"mtf_nyquist": mtf_nyquist, "mtf50": float(mtf50), "fwhm": fwhm_px}
+    return {"mtf_nyquist": float(mtf_nyquist), "mtf50": float(mtf50), "fwhm": float(fwhm_px)}
 
 
 def detect_and_measure_edges(

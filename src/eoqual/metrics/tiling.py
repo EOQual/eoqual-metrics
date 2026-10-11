@@ -74,6 +74,8 @@ import numpy.typing as npt
 import pandas as pd
 from loguru import logger
 
+from eoqual.core.tiling import tile_bounds
+
 MetricFn = Callable[..., Union[float, Tuple[float, dict]]]
 
 # Recouvrement par métrique : comment juger qu'une tuile est
@@ -89,21 +91,9 @@ _REPRESENTATIVENESS_OVERRIDES: Dict[str, Callable[[dict], float]] = {
 }
 
 
-def _tile_bounds(size: int, tile_size: int, overlap: float) -> List[Tuple[int, int]]:
-    """
-    Positions de départ/fin d'un découpage 1D en tuiles chevauchantes.
-
-    Si ``size <= tile_size``, renvoie une unique tuile ``[0, size)``
-    (l'image entière tient dans une seule tuile — pas d'erreur).
-    """
-    if size <= tile_size:
-        return [(0, size)]
-
-    stride = max(1, round(tile_size * (1 - overlap)))
-    starts = list(range(0, size - tile_size + 1, stride))
-    if starts[-1] != size - tile_size:
-        starts.append(size - tile_size)  # dernière tuile alignée sur le bord
-    return [(s, s + tile_size) for s in starts]
+# Découpage 1D en tuiles chevauchantes, dernière tuile alignée sur le bord :
+# brique partagée d'eoqual-core.
+_tile_bounds = tile_bounds
 
 
 def compute_score_on_tiles(

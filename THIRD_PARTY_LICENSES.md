@@ -97,6 +97,11 @@ joblib, rich, loguru, pandas, IQA_pytorch, piq), à l'exception de `cpbd`
 dont le classifieur PyPI indique « Other/Proprietary License » — à vérifier
 plus précisément si l'algo passe en utilisation production (voir §3).
 
+### Dépendance interne EOQual
+
+`eoqual-core` (MIT, même auteur) : briques numériques partagées
+(`fourier`, `edge`, `tiling`), numpy et scipy seulement.
+
 ## 3. Méthodes non implémentées (roadmap)
 
 Ces métriques ne sont **pas encore portées** dans `eoqual-metrics` — issues

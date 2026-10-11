@@ -21,6 +21,9 @@ exclude = [
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
+# Briques numériques communes (fourier, edge, tiling), épinglées sur une
+# version : voir les règles de stabilité d'eoqual-core.
+eoqual-core = {git = "https://github.com/EOQual/eoqual-core.git", tag = "v0.1.0"}
 cookiecutter = "^2.1.1"
 numpy = "*"
 scipy = "*"

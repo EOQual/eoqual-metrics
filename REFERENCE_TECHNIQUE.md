@@ -283,8 +283,19 @@ distingue flou horizontal/vertical).
 Réimplémentations originales d'Olivier Amram à partir des publications
 citées (pas de portage de code tiers) — GRAY uniquement.
 
-**Limites** : pas de suite de tests de non-régression contre une
-implémentation de référence publiée.
+**`sharpness_index` en détail** : compare la variation totale TV(u) à
+celle d'un champ gaussien de même spectre d'amplitude et de phase
+aléatoire, dont la moyenne μ et l'écart-type σ sont calculés en forme
+close ; `SI = -log10 Φ((μ - TV)/σ)`. Prétraitement `pmode=3` par défaut :
+composante périodique (Moisan 2011, supprime les faux contours de bord)
+puis déquantification (translation d'un demi-pixel). Calcul en float64 ;
+`sharpness_stats` expose μ, σ et z. Les moments sont validés contre une
+simulation Monte-Carlo (`tests/test_sharpness_index.py`).
+
+**Limites** : `lpc_si` et `psi` n'ont pas de suite de tests de
+non-régression contre une implémentation de référence publiée. SI est un
+score ordinal : à comparer entre versions d'une même scène, à taille
+égale.
 
 #### 3.3.c Spectral
 
@@ -362,10 +373,23 @@ sensibles au contenu de la scène) :
 `aem`/`sasbem`). Toutes GRAY uniquement, exposent `return_details=True`
 pour le détail (mtf50, fwhm, n_edges, reliability, insufficient).
 
+Dans `_slanted_edge.py`, la détection et la sélection des arêtes sont
+propres à metrics ; le binning de l'ESF, la MTF (normalisée en fréquence
+nulle), la MTF@Nyquist, la MTF50 et la FWHM viennent d'`eoqual.core.edge`
+(partagé avec eoqual-measure). La FWHM est calculée sur la LSF lissée par
+une gaussienne d'un demi-pixel, puis par la première traversée du
+demi-maximum de part et d'autre du pic : l'ancienne définition (premier
+et dernier point au-dessus du seuil sur tout le profil) dépassait 15 px
+sur un simple rebond de bruit.
+
 **Limites** :
 - Ces métriques ne sont analysées qu'en image entière par défaut — pour
   une scène large où un score unique masquerait une hétérogénéité locale,
   voir le calcul par tuiles opt-in (§3.4).
+- Une « arête » dont la LSF s'intègre presque à zéro (ligne fine plutôt
+  que bord) donne une MTF sans signification (> 1 observé) ; elle n'est
+  pas encore rejetée avant la médiane d'`aem` (`sasbem` l'écarte en
+  général par son filtrage MAD).
 - `aem`/`sasbem` renvoient `0.0`/`insufficient=True` sur les scènes
   homogènes (eau, forêt dense, désert) — résultat attendu, pas une erreur
   (pas d'arête rectiligne exploitable), mais peut surprendre à l'usage si
