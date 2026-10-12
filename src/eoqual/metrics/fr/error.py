@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check
+from ..core.checker import as_channels_last, initial_check
 
 # Optional dependencies
 try:
@@ -249,7 +249,10 @@ def rmse(
     if algo == "image-similarity-measures":
         if not _ISM:
             raise ImportError("image_similarity_measures est requis.")
-        return float(_rmse_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        # RMSE normalisée par max_p = dynamique de la référence (au lieu des
+        # 4095 supposés par défaut par image-similarity-measures).
+        max_p = float(np.abs(GT.max() - GT.min())) or 1.0
+        return float(_rmse_ism(as_channels_last(GT), as_channels_last(P), max_p=max_p))
     raise ValueError(f"'algo' inconnu : {algo!r}")
 
 

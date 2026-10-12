@@ -36,14 +36,11 @@ numpy, scipy, scikit-image, scikit-learn, opencv-python, sewar, pyrtools,
 cpbd, pandas, rich, loguru... (liste complète : `pyproject.toml`,
 section `[tool.poetry.dependencies]`).
 
-**Prérequis système** — une seule bibliothèque C, requise par `pyfftw`
-(lui-même nécessaire à l'étape 2 ci-dessous) :
-
-```bash
-brew install fftw      # macOS
-conda install fftw     # conda
-pixi add fftw          # pixi
-```
+Aucun prérequis système : `pyfftw` (nécessaire à l'étape 2 ci-dessous)
+est pris sur PyPI en version ≥ 0.15.1, dont les wheels embarquent la
+bibliothèque FFTW (macOS, Linux, Windows ; Python 3.11 à 3.14). Sous
+Python 3.10, `pyfftw` n'est pas installé : seules les métriques de
+l'étape 2 sont alors indisponibles.
 
 ### 2. `image-similarity-measures` (fortement recommandé)
 
@@ -56,8 +53,8 @@ installation manuelle après l'étape 1, avec `--no-deps` pour réutiliser le
 pip install image-similarity-measures --no-deps
 ```
 
-**Sans cette étape**, tout appel de `issm`, `sam`, `sre` (aucun autre
-algorithme n'existe pour ces trois métriques) ou de `fsim` avec son algo
+**Sans cette étape**, tout appel de `sam`, `sre` (aucun autre
+algorithme n'existe pour ces deux métriques) ou de `fsim` avec son algo
 par défaut lève une `ImportError` explicite indiquant quoi installer —
 voir [Ce qui est disponible selon l'installation](#ce-qui-est-disponible-selon-linstallation).
 Pour `fsim` uniquement, une alternative existe sans cette étape :

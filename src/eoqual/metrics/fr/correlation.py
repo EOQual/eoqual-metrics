@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check, versiontuple
+from ..core.checker import as_channels_last, initial_check, versiontuple
 
 try:
     from scipy.spatial import distance as _scipy_distance
@@ -286,7 +286,7 @@ def uqi(
     if algo == "image-similarity-measures":
         if not _ISM:
             return None
-        return float(_uqi_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        return float(_uqi_ism(as_channels_last(GT), as_channels_last(P)))
     raise ValueError(f"'algo' inconnu : {algo!r}")
 
 

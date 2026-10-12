@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check
+from ..core.checker import as_channels_last, initial_check, rescale_to_full_scale
 from ..core.image_utils import prepare_image
 
 try:
@@ -168,7 +168,7 @@ def fsim(
     GT, P = initial_check(GT, P)
     if algo == "image-similarity-measures":
         _require_ism()
-        return float(_fsim_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        return float(_fsim_ism(*map(as_channels_last, rescale_to_full_scale(GT, P, 255.0))))
     if algo == "piq":
         _require_piq()
         from ..backends.piq.common import to_rgb_tensors
@@ -243,38 +243,65 @@ def gmsd(
 def issm(
     GT: npt.NDArray,
     P: npt.NDArray,
-    algo: str = "image-similarity-measures",
+    algo: str = "numpy",
+    data_range: Optional[float] = None,
+    ehs: str = "counts",
 ) -> float:
     """
     Calcule l'Information theoretic-based Statistic Similarity Measure (ISSM).
 
+    Aljanabi, Hussain, Shnain & Lu (2019), European Journal of Remote
+    Sensing 52(sup4), 2-15 : combinaison de l'entropie du histogramme
+    conjoint, du SSIM et de la corrélation des contours de Canny.
+
     Parameters
     ----------
     GT : npt.NDArray
-        Image de référence.
+        Image de référence, niveaux de gris (2D).
     P : npt.NDArray
-        Image traitée / dégradée.
+        Image traitée / dégradée, même shape.
     algo : str, optional
         Algorithme à utiliser. Valeurs possibles :
 
-        * ``"image-similarity-measures"`` (défaut)
+        * ``"numpy"`` (défaut) — implémentation d'après l'article, voir
+          ``backends/issm/numpy_impl.py`` pour les choix là où l'article est
+          muet ou incohérent.
+        * ``"image-similarity-measures"`` — formule conçue pour des images
+          12 bits (facteur 0.0625 avant Canny à seuils fixes, SSIM sur
+          4095) : les images y sont ramenées sur [0, 4095]. Histogramme à
+          10 classes, corrélation des contours sans valeur absolue.
+    data_range : float, optional
+        Dynamique des images. Défaut : dynamique de ``GT``.
+    ehs : str, optional
+        ``"counts"`` (défaut, reproduit les figures de l'article) ou
+        ``"probabilities"`` (équations 10-13 à la lettre) — ``"numpy"``
+        seulement.
 
     Returns
     -------
     float
-        Valeur de l'ISSM. Une valeur plus élevée indique une meilleure qualité.
+        Similarité : 1 pour deux images identiques, proche de 0 pour deux
+        images sans rapport. Une valeur plus élevée indique une meilleure
+        qualité.
 
     Raises
     ------
     ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
+        Si ``algo`` n'est pas reconnu, si les images sont incompatibles ou
+        ne sont pas en niveaux de gris (``"numpy"``).
     ImportError
-        Si ``image-similarity-measures`` n'est pas installé.
+        Si ``algo="image-similarity-measures"`` et le paquet est absent.
     """
     GT, P = initial_check(GT, P)
+    if algo == "numpy":
+        from ..backends.issm.numpy_impl import issm as _issm_numpy
+        return _issm_numpy(GT, P, data_range=data_range, ehs=ehs)
     if algo == "image-similarity-measures":
         _require_ism()
-        return float(_issm_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        # Formule conçue pour des images 12 bits (facteur 0.0625 avant Canny,
+        # SSIM sur 4095) : images ramenées sur [0, 4095].
+        GT12, P12 = rescale_to_full_scale(GT, P, 4095.0, data_range)
+        return float(_issm_ism(as_channels_last(GT12), as_channels_last(P12)))
     logger.error(f"'algo' inconnu : {algo!r}")
     raise ValueError(f"'algo' inconnu : {algo!r}")
 

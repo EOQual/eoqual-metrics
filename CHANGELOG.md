@@ -4,7 +4,62 @@
 
 Non publié
 
-:   -   `sharpness_index` réécrit : calcul en float64 (écart relatif ~6e-5 avec
+:   -   **Dynamique des images dans les enveloppes
+        image-similarity-measures** : `psnr`, `rmse`, `ssim` reçoivent
+        `max_p` = dynamique des images (au lieu des 4095 supposés en
+        amont : PSNR de 52 dB au lieu de 28 dB sur une image 0-255),
+        `fsim` reçoit des images ramenées sur [0, 255] (T2 = 160) et
+        `issm` sur [0, 4095] (formule 12 bits : il renvoyait 0 sur toute
+        image 8 bits ou flottante). Résultats désormais indépendants de
+        l'échelle des valeurs ; `psnr` et `ssim` égaux aux algos `numpy`
+        et `skimage`.
+    -   **`issm` réimplémenté** (nouvel algo `numpy`, par défaut) d'après
+        Aljanabi et al. (2019) : l'algo `image-similarity-measures`
+        renvoyait 0 sur toute image 8 bits ou flottante (conception
+        12 bits). Choix documentés là où l'article est muet ou
+        incohérent (EHS en comptes pour reproduire ses figures, Canny à
+        seuils automatiques façon MATLAB, e = nombre d'Euler) ;
+        paramètres `data_range` et `ehs`. 1 pour deux images
+        identiques, décroissance avec le bruit, < 0.05 entre images sans
+        rapport (`tests/test_issm.py`). L'ancien algo reste disponible
+        pour comparaison.
+    -   **Correction des enveloppes `image-similarity-measures`**
+        (`fsim`, `issm`, `sam`, `sre`, `psnr`, `rmse`, `ssim`, `uqi`) :
+        l'axe de canal n'est plus ajouté qu'aux images 2D
+        (`core.checker.as_channels_last`). En RVB, `sam` mesurait l'angle
+        entre des scalaires (≈ 0 au lieu de 3.49° sur l'image de test),
+        `ssim`/`uqi` levaient une erreur et `issm` échouait dans OpenCV ;
+        les valeurs sur image 2D sont inchangées.
+    -   `sam` : `lower_better: True` (c'est un angle), restreint aux
+        images multicanal (`ValueError` sur une image 2D, où il valait
+        toujours 0), calcul en float64 (≈ 0.006° au lieu de 0 pour deux
+        images identiques en float32). Tests
+        `tests/test_ism_wrappers.py` (sautés sans image-similarity-measures).
+    -   Échec d'import : `logger.catch(reraise=True)` dans `psi`, `lpc_si`,
+        `s3`, et `raise` au lieu de `sys.exit(-2)` dans les backends
+        `metrikz`, `ssim_2`, `ssim_4` — la trace reste affichée, mais
+        l'`ImportError` d'origine est relancée (rattrapable dans un
+        notebook ou un programme appelant ; code retour 1 pour un
+        script).
+    -   **Rejet des arêtes aberrantes** dans `aem`/`sasbem`
+        (`detect_and_measure_edges`) : LSF qui s'annule presque (`|Σ LSF|
+        / Σ |LSF| < 0.1`, ligne fine) ou MTF > 1.5 avant Nyquist (lobes
+        négatifs). Sur l'image `r0`, `aem` passe de 0.167 à 0.050 (4
+        arêtes sur 8 rejetées, dont une à MTF@Nyquist = 73). Seuils
+        réglables (`max_mtf_overshoot`, `min_edge_sign_ratio`).
+    -   `python >= 3.10` (au lieu de 3.12 : aucune construction du code ne
+        l'imposait ; vérifié sous 3.10 et 3.11).
+    -   `pyfftw` pris sur PyPI (`>= 0.15.1`, au lieu du dépôt git) :
+        wheels avec FFTW embarqué (plus de prérequis système), résultats
+        identiques ; installé à partir de Python 3.11 (exigence de
+        pyfftw), sous 3.10 seules les métriques
+        d'image-similarity-measures sont indisponibles.
+    -   `cookiecutter` déplacé des dépendances d'exécution vers le groupe
+        `dev`.
+    -   Intégration continue des tests (`.github/workflows/tests.yml`).
+    -   `license.txt` : titulaire des droits (Olivier Amram) au lieu du
+        nom du module.
+    -   `sharpness_index` réécrit : calcul en float64 (écart relatif ~6e-5 avec
         l'ancienne version, qui travaillait en float32), suppression d'un
         `print` de débogage et de l'arrêt du processus à l'import
         (`logger.catch` + `sys.exit`) ; nouvelle fonction

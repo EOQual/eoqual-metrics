@@ -20,19 +20,22 @@ exclude = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<4.0"
+python = ">=3.10,<4.0"
 # Briques numériques communes (fourier, edge, tiling), épinglées sur une
 # version : voir les règles de stabilité d'eoqual-core.
 eoqual-core = {git = "https://github.com/EOQual/eoqual-core.git", tag = "v0.1.0"}
-cookiecutter = "^2.1.1"
 numpy = "*"
 scipy = "*"
 scikit-image = ">0.20.0"
 scikit-learn = "*"
 opencv-python = "*"
 joblib = "*"
-# pyfftw : Necessaire a image-similarity-measures
-pyfftw = {git = "https://github.com/pyFFTW/pyFFTW.git"}
+# pyfftw : nécessaire à image-similarity-measures (installé à part, voir
+# README). Version PyPI >= 0.15.1 : wheels avec FFTW embarqué (aucune
+# bibliothèque C à installer), compatibles numpy 2 ; elle exige Python
+# >= 3.11 — sous 3.10, seules les métriques d'image-similarity-measures
+# sont indisponibles (ImportError explicite).
+pyfftw = {version = ">=0.15.1", python = ">=3.11"}
 sewar = "*"
 #image-similarity-measures = "*" # A installer manuellement
 matplotlib = "^3.5.0"
@@ -95,6 +98,7 @@ sphinx-rtd-theme = "*"
 sphinx-autoapi = "*"
 
 [tool.poetry.group.dev.dependencies]
+cookiecutter = "^2.1.1"
 poetry = "^2.1.1"
 ipython = "^8.8.0"
 black = "^23.3.0"

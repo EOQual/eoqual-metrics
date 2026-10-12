@@ -145,7 +145,8 @@ circulaires de Laguerre-Gauss — Baroncini et al. 2009).
 
 **Implémentation** : `fr/perceptual.py`, `fr/ssim.py`. `vif` défaut `sewar`
 (pas de torch nécessaire) ; `gmsd` défaut `numpy` (vendored depuis sporco,
-BSD-3-Clause, voir `backends/gmsd/numpy_impl.py`) ; `fsim`/`issm`/`sam`/`sre`
+BSD-3-Clause, voir `backends/gmsd/numpy_impl.py`) ; `issm` défaut `numpy`
+(`backends/issm/numpy_impl.py`, voir ci-dessous) ; `fsim`/`sam`/`sre`
 défaut `image-similarity-measures` ; `reco` défaut `numpy`
 (`backends/reco/numpy_impl.py`).
 
@@ -179,9 +180,69 @@ vecteurs de réflectance), `sre` (signal-to-reconstruction error).
 **Implémentation** : `fr/spectral.py`. Tous via `sewar` ou
 `image-similarity-measures`, un seul algo chacun.
 
-**Limites** : `rase` restreint à GRAY. Ces métriques supposent des bandes
-alignées/coregistrées — aucune vérification de recalage n'est faite en
-amont (à la charge de l'appelant).
+**Limites** : `rase` restreint à GRAY ; `sam` restreint aux images
+multicanal (l'angle entre deux scalaires positifs est toujours nul) : il
+renvoie un angle moyen en degrés, plus petit = meilleur, calculé en
+float64 (l'arc cosinus est mal conditionné près de 1). Ces métriques
+supposent des bandes alignées/coregistrées — aucune vérification de
+recalage n'est faite en amont (à la charge de l'appelant).
+
+**Enveloppes `image-similarity-measures`** (`fsim`, `issm`, `sam`, `sre`,
+`psnr`, `rmse`, `ssim`, `uqi`) : les images sont passées au format
+`(H, W, C)` par `core.checker.as_channels_last` (axe de canal ajouté aux
+seules images 2D).
+
+**Dynamique des images.** Plusieurs fonctions d'`image-similarity-measures`
+supposent des images 12 bits (dynamique 4095), quelle que soit l'image
+fournie ; sans correction, leur résultat dépendait de l'échelle des
+valeurs (ex. PSNR de 52 dB pour une image 0-255 et 100 dB pour la même
+image en 0-1, au lieu de 28 dB). Les enveloppes fixent désormais cette
+dynamique :
+
+| Métrique | Hypothèse amont | Correction | Résultat |
+|---|---|---|---|
+| `psnr`, `rmse` | `max_p = 4095` | `max_p` = dynamique de la référence (convention de l'algo `numpy`) | `psnr` identique à l'algo `numpy` ; `rmse` normalisée par la dynamique |
+| `ssim` | `data_range = 4095` | `max_p` = dynamique conjointe des deux images (convention de l'algo `skimage`) | identique à l'algo `skimage` |
+| `fsim` | `T2 = 160`, fixé pour des images 8 bits | images ramenées sur [0, 255] | indépendant de l'échelle |
+| `issm` | image × 0.0625 avant Canny à seuils fixes 100/200, SSIM sur 4095 | images ramenées sur [0, 4095] | 1 pour deux images identiques au lieu de 0 partout |
+
+`uqi`, `sam` et `sre` sont indépendants de l'échelle. Les tests vérifient
+l'indépendance à l'échelle de chaque enveloppe concernée
+(`tests/test_ism_wrappers.py`).
+
+**`issm` (algo `numpy`, défaut)** — Aljanabi, Hussain, Shnain & Lu
+(2019), *European Journal of Remote Sensing* 52(sup4), 2-15,
+doi:10.1080/22797254.2019.1628617. Éq. (16) :
+`I = (C·EHS·(a+b) + e) / (a·C·EHS + b·EHS + c·S + e)`, a, b, c = 0.3,
+0.5, 0.7 ; C = |corrélation| des cartes de Canny (éq. 14) ; EHS =
+entropie du histogramme conjoint 256 × 256 (éq. 13) ; S = SSIM (L = 255).
+Choix là où l'article est muet ou incohérent :
+
+- *EHS* : les équations (10)-(13) normalisent le histogramme
+  (probabilités), mais cette lecture donne ~0.92 pour deux images
+  identiques et ~0.3 pour deux images sans rapport, ce que contredisent
+  les figures 3-10 de l'article (→ 1 et ≈ 0). Les figures ne sont
+  reproduites qu'en **comptes** : défaut `ehs="counts"` ;
+  `ehs="probabilities"` suit les équations à la lettre.
+- *e* : non défini dans l'article ; nombre d'Euler.
+- *Canny* : seuils automatiques à la manière de MATLAB `edge(I,'canny')`
+  (outil des auteurs) : σ = √2, seuil haut = 70e centile de la norme du
+  gradient, seuil bas = 0.4 × seuil haut.
+- *Dynamique* : images ramenées sur [0, 255] via `data_range` (défaut :
+  dynamique de la référence) — résultat indépendant de l'échelle des
+  valeurs.
+
+Comportement (image `camera`, bruit gaussien) : 0.99 à 60 dB, 0.75 à
+30 dB, 0.31 à 20 dB, 0.11 à 10 dB ; < 0.05 entre images sans rapport.
+L'algo `image-similarity-measures` (images ramenées sur [0, 4095]) suit
+la même tendance mais décroît plus vite (0.69 à 30 dB, 0.19 à 20 dB sur
+une image 256 × 256) : seuils de Canny fixes, histogramme à 10 classes,
+corrélation des contours sans valeur absolue.
+**Limite** : en comptes, EHS (négative, en N log N) écrase les autres
+termes et I ≈ 0.8·C/(0.3·C + 0.5) : l'ISSM se comporte comme une
+similarité de contours, le SSIM ne pesant presque rien ; pour deux
+images identiques, I = 1 + 0.7/(0.8|EHS|) (léger dépassement de 1 sur
+petite image). Niveaux de gris uniquement.
 
 ---
 
@@ -386,10 +447,19 @@ sur un simple rebond de bruit.
 - Ces métriques ne sont analysées qu'en image entière par défaut — pour
   une scène large où un score unique masquerait une hétérogénéité locale,
   voir le calcul par tuiles opt-in (§3.4).
-- Une « arête » dont la LSF s'intègre presque à zéro (ligne fine plutôt
-  que bord) donne une MTF sans signification (> 1 observé) ; elle n'est
-  pas encore rejetée avant la médiane d'`aem` (`sasbem` l'écarte en
-  général par son filtrage MAD).
+- Arêtes rejetées avant la médiane (`detect_and_measure_edges`) : LSF
+  qui s'annule presque (`|Σ LSF| / Σ |LSF| < 0.1` : ligne fine plutôt que
+  bord) ou MTF > 1.5 avant Nyquist (lobes négatifs : arête voisine, coin,
+  texture dans la bande de projection). Sur l'image `r0`, 4 arêtes sur 8
+  rejetées (dont une à MTF@Nyquist = 73) : `aem` passe de 0.167 à 0.050.
+  Sur scènes synthétiques, la médiane se rapproche de la MTF vraie dans
+  9 cas sur 11. Seuils réglables (`max_mtf_overshoot`,
+  `min_edge_sign_ratio`).
+- Plancher de bruit : même après ce rejet, la MTF@Nyquist par arête
+  reste au-dessus de la valeur vraie sur scène floue et bruitée (ex. 0.15
+  pour 0.06 attendu) — le bruit de l'ESF ne s'annule pas à haute
+  fréquence. À interpréter comme un indicateur relatif, pas comme une
+  mesure absolue (voir eoqual-measure pour une mesure sur mire).
 - `aem`/`sasbem` renvoient `0.0`/`insufficient=True` sur les scènes
   homogènes (eau, forêt dense, désert) — résultat attendu, pas une erreur
   (pas d'arête rectiligne exploitable), mais peut surprendre à l'usage si

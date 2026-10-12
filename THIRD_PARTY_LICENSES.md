@@ -49,6 +49,11 @@ explicitement via `algo=`, restent sous une licence différente — voir §2.
 | `backends/ssim/improved_impl.py` | `ssim` algo `ssim_2` | Helder C. R. de Oliveira | **GPL** — auto-déclaré |
 | `backends/ssim/clermont_impl.py` | `ssim` algo `ssim_4` | Antoine Vacavant, ISIT/Clermont | **GPL** — auto-déclaré |
 
+Modification locale (2026-10-12), signalée conformément à la GPL :
+dans `metrikz.py`, `improved_impl.py` et `clermont_impl.py`, l'échec d'un
+import relance désormais l'exception (`raise`) au lieu d'arrêter le
+processus (`sys.exit(-2)`) ; le message affiché est inchangé.
+
 Ces 5 fichiers restent optionnels : ils ne sont jamais utilisés par défaut, et
 un utilisateur ne les obtient qu'en demandant explicitement leur `algo=`.
 Impact nul sur l'usage standard de la librairie — voir §3 pour la
@@ -62,6 +67,7 @@ remédiation envisageable.
 | `backends/vif/wavelet_impl.py` | `vif` algo `wavelet_impl` | abhinaukumar/vif | MIT |
 | `backends/cw_ssim/wavelet_impl.py` | `cw_ssim` (défaut) | charparr/tundra-snow | MIT |
 | `backends/gmsd/numpy_impl.py` | `gmsd` (défaut `numpy`) | bwohlberg/sporco | BSD-3-Clause |
+| `backends/issm/numpy_impl.py` | `issm` (défaut `numpy`) | Implémentation originale d'Olivier Amram d'après Aljanabi et al. (2019), article en accès libre CC BY-NC 4.0 (méthode, pas de code repris) | MIT (auteur du dépôt) |
 | `backends/pamse/numpy_impl.py` | `pamse` (défaut `numpy`) | bwohlberg/sporco | BSD-3-Clause |
 | `backends/ssim/mssim_impl.py` | `msssim` algo `msssim_2` | 4og/mssim | MIT |
 | `nr/sharpness/backends/phase/{psi,sharpness_index,lpc_si}.py`, `backends/spectral/s3.py` | `sharpness` (algos `psi`, `sharpness_index`, `lpc_si`, `s3`) | Réimplémentations originales d'Olivier Amram | MIT (auteur du dépôt) |

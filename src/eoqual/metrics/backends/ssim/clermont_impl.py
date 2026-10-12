@@ -23,7 +23,6 @@ __url__ = 'http://isit.u-clermont1.fr/~anvacava/code-ssim-source.html'
 #-----------------------------------------------------------------------------------------------------------------------------
 # IMPORTS STANDARD
 #-----------------------------------------------------------------------------------------------------------------------------
-import sys
 import os
 
 
@@ -39,7 +38,7 @@ try:
 except Exception as e :
     print("Probleme d'import de librairie Python : %s" %e)
     print("         (%s)" %os.path.abspath(__file__))
-    sys.exit(-2)
+    raise  # relance l'erreur d'origine (rattrapable) au lieu d'arrêter le processus
 
 
 '''

@@ -246,10 +246,14 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
         'lower_better': True,
     },
     'issm': {
+        # 'numpy' : d'après Aljanabi et al. (2019), voir
+        # backends/issm/numpy_impl.py. 'image-similarity-measures' : formule
+        # 12 bits, images ramenées sur [0, 4095] par l'enveloppe.
         'algo': [
+            {'name': 'numpy', 'only': 'GRAY'},
             {'name': 'image-similarity-measures', 'only': 'GRAY'}
         ],
-        'default': 'image-similarity-measures',
+        'default': 'numpy',
         'metric_mode': 'FR',
         'lower_better': False,
     },
@@ -347,11 +351,11 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     },
     'sam': {
         'algo': [
-            {'name': 'image-similarity-measures'}
+            {'name': 'image-similarity-measures', 'only': 'RGB'}
         ],
         'default': 'image-similarity-measures',
         'metric_mode': 'FR',
-        'lower_better': False,
+        'lower_better': True,
     },
     'sre': {
         'algo': [

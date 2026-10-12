@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check
+from ..core.checker import as_channels_last, initial_check
 from ..core.image_utils import prepare_image
 
 # PyTorch
@@ -136,7 +136,10 @@ def ssim(
     if algo == "image-similarity-measures":
         if not _ISM:
             return None
-        return float(_ssim_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        # max_p = dynamique conjointe des deux images (même convention que
+        # l'algo 'skimage') : par défaut, image-similarity-measures suppose 4095.
+        max_p = float(np.max(np.maximum(GT, P)) - np.min(np.minimum(GT, P))) or 1.0
+        return float(_ssim_ism(as_channels_last(GT), as_channels_last(P), max_p=max_p))
 
     if algo in ("ssim_1", "ssim_2", "ssim_3", "ssim_4"):
         from ..backends.ssim import skimage_impl, improved_impl, video_impl, clermont_impl

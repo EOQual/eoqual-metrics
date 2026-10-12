@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check
+from ..core.checker import as_channels_last, initial_check
 from .error import mse
 
 try:
@@ -126,7 +126,10 @@ def psnr(
     if algo == "image-similarity-measures":
         if not _ISM:
             raise ImportError("image_similarity_measures est requis.")
-        return float(_psnr_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        # max_p = dynamique de la référence (même convention que l'algo
+        # 'numpy') : par défaut, image-similarity-measures suppose 4095.
+        max_p = float(np.abs(GT.max() - GT.min())) or 1.0
+        return float(_psnr_ism(as_channels_last(GT), as_channels_last(P), max_p=max_p))
     raise ValueError(f"'algo' inconnu : {algo!r}")
 
 

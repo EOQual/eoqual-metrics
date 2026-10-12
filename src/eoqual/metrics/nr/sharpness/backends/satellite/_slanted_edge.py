@@ -112,7 +112,23 @@ def _project_edge_profile(
     return core_edge.bin_profile(offsets, values, half_width, oversample)
 
 
-def _mtf_from_esf(esf: NDArray[np.floating], oversample: int) -> Optional[Dict[str, float]]:
+#: Rejet d'une arête dont la MTF dépasse ce seuil sur [0, Nyquist] : une MTF
+#: physique ne dépasse pas 1 ; au-delà de la marge laissée au bruit, la LSF a
+#: des lobes négatifs importants (arête voisine dans la bande, coin, texture)
+#: et la MTF@Nyquist mesurée est biaisée vers le haut.
+MAX_MTF_OVERSHOOT = 1.5
+#: Rejet d'une arête dont |Σ LSF| / Σ |LSF| est sous ce seuil : la LSF change
+#: de signe au point de s'annuler presque (ligne fine plutôt que bord) et la
+#: normalisation en fréquence nulle divise par ~0.
+MIN_EDGE_SIGN_RATIO = 0.1
+
+
+def _mtf_from_esf(
+    esf: NDArray[np.floating],
+    oversample: int,
+    max_mtf_overshoot: float = MAX_MTF_OVERSHOOT,
+    min_edge_sign_ratio: float = MIN_EDGE_SIGN_RATIO,
+) -> Optional[Dict[str, float]]:
     """
     LSF (dérivée de l'ESF) -> fenêtrage de Hann -> FFT zéro-paddée -> MTF
     normalisée en fréquence nulle, puis MTF@Nyquist, MTF50 et FWHM.
@@ -130,15 +146,24 @@ def _mtf_from_esf(esf: NDArray[np.floating], oversample: int) -> Optional[Dict[s
     (premier et dernier point au-dessus du demi-maximum sur tout le profil)
     surestimait au contraire la largeur dès qu'un rebond de bruit, même
     loin du pic, repassait au-dessus du seuil (jusqu'à 15 px observés).
+
+    Renvoie ``None`` (arête rejetée) si la LSF s'annule presque
+    (``|Σ LSF| / Σ |LSF| < min_edge_sign_ratio``) ou si la MTF dépasse
+    ``max_mtf_overshoot`` avant Nyquist — voir :data:`MAX_MTF_OVERSHOOT` et
+    :data:`MIN_EDGE_SIGN_RATIO`.
     """
     lsf = np.diff(esf)
     if np.abs(lsf).sum() < 1e-8:
         return None
     lsf_w = lsf * np.hanning(len(lsf))
     lsf_w = lsf_w / (np.abs(lsf_w).sum() + 1e-12)
+    if abs(lsf_w.sum()) < min_edge_sign_ratio:
+        return None  # ligne fine ou profil sans saut net : pas un bord
 
     dx = 1.0 / oversample
     freqs, mtf = core_edge.lsf_to_mtf(lsf_w, dx, n_fft=max(512, 8 * len(lsf_w)))  # cycles/pixel
+    if np.max(mtf[freqs <= 0.5]) > max_mtf_overshoot:
+        return None  # MTF non physique : arête contaminée
 
     mtf_nyquist = core_edge.mtf_at(freqs, mtf, 0.5)
     mtf50 = core_edge.frequency_at(freqs, mtf, 0.5)
@@ -164,6 +189,8 @@ def detect_and_measure_edges(
     canny_sigma: float = 1.5,
     low_threshold: float = 0.05,
     high_threshold: float = 0.2,
+    max_mtf_overshoot: float = MAX_MTF_OVERSHOOT,
+    min_edge_sign_ratio: float = MIN_EDGE_SIGN_RATIO,
 ) -> Tuple[List[Dict[str, float]], int]:
     """
     Détecte des arêtes naturelles exploitables et mesure leur MTF individuelle.
@@ -202,6 +229,13 @@ def detect_and_measure_edges(
         Facteur de sur-échantillonnage de l'ESF (bins par pixel).
     canny_sigma, low_threshold, high_threshold : float, optional
         Paramètres du détecteur de contours Canny (scikit-image).
+    max_mtf_overshoot : float, optional
+        Rejette une arête dont la MTF dépasse ce seuil sur [0, Nyquist]
+        (défaut :data:`MAX_MTF_OVERSHOOT` = 1.5).
+    min_edge_sign_ratio : float, optional
+        Rejette une arête dont ``|Σ LSF| / Σ |LSF|`` est inférieur à ce
+        seuil — ligne fine plutôt que bord (défaut
+        :data:`MIN_EDGE_SIGN_RATIO` = 0.1).
 
     Returns
     -------
@@ -235,7 +269,7 @@ def detect_and_measure_edges(
         if esf is None:
             continue
 
-        mtf_res = _mtf_from_esf(esf, oversample)
+        mtf_res = _mtf_from_esf(esf, oversample, max_mtf_overshoot, min_edge_sign_ratio)
         if mtf_res is None:
             continue
 

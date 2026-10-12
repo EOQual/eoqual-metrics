@@ -43,7 +43,6 @@ __url__ = 'http://'
 # IMPORTS STANDARD
 #-----------------------------------------------------------------------------------------------------------------------------
 import os
-import sys
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -59,7 +58,7 @@ try:
 except Exception as e :
     print("Probleme d'import de librairie Python : %s" %e)
     print("         (%s)" %os.path.abspath(__file__))
-    sys.exit(-2)
+    raise  # relance l'erreur d'origine (rattrapable) au lieu d'arrêter le processus
 
 
 __author__ = "Pedro Garcia Freitas <sawp@sawp.com.br>"

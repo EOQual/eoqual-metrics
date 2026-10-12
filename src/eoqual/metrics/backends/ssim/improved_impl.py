@@ -35,7 +35,6 @@ __url__ = 'http://helderc.net, https://github.com/helderc/src/blob/master/SSIM_I
 # IMPORTS STANDARD
 #-----------------------------------------------------------------------------------------------------------------------------
 import os
-import sys
 
 #-----------------------------------------------------------------------------------------------------------------------------
 # IMPORTS TIERS
@@ -47,7 +46,7 @@ try:
 except Exception as e :
     print("Probleme d'import de librairie Python : %s" %e)
     print("         (%s)" %os.path.abspath(__file__))
-    sys.exit(-2)
+    raise  # relance l'erreur d'origine (rattrapable) au lieu d'arrêter le processus
 
 
 def compute_ssim_improved(im1, im2, k=(0.01, 0.03), dynamic_range=255.0, MAP=False):

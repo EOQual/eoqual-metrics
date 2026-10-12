@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import initial_check
+from ..core.checker import as_channels_last, initial_check
 
 try:
     from sewar.full_ref import ergas as _ergas_sewar
@@ -128,23 +128,33 @@ def sam(
     Returns
     -------
     float
-        Valeur du SAM. Une valeur plus élevée indique une meilleure qualité.
+        Angle spectral moyen, en degrés. Plus il est petit, plus les
+        spectres sont proches (0 = spectres colinéaires).
 
     Raises
     ------
     ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
+        Si ``algo`` n'est pas reconnu, si les images sont incompatibles, ou
+        si elles n'ont qu'un canal (l'angle entre deux scalaires positifs
+        est toujours nul : SAM n'a de sens qu'en multicanal).
     ImportError
         Si ``image-similarity-measures`` n'est pas installé.
     """
     GT, P = initial_check(GT, P)
+    if GT.ndim != 3 or GT.shape[2] < 2:
+        raise ValueError(
+            f"SAM nécessite des images multicanal (H, W, C >= 2), reçu shape={GT.shape}."
+        )
     if algo == "image-similarity-measures":
         if not _ISM:
             raise ImportError(
                 "image-similarity-measures est requis pour cet algo : "
                 "pip install image-similarity-measures --no-deps (voir README.md)."
             )
-        return float(_sam_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        # float64 : l'arc cosinus est très mal conditionné près de 1
+        # (spectres presque colinéaires) ; en float32, deux images
+        # identiques donnaient ~0.006° au lieu de 0.
+        return float(_sam_ism(GT.astype(np.float64), P.astype(np.float64)))
     logger.error(f"'algo' inconnu : {algo!r}")
     raise ValueError(f"'algo' inconnu : {algo!r}")
 
@@ -187,7 +197,7 @@ def sre(
                 "image-similarity-measures est requis pour cet algo : "
                 "pip install image-similarity-measures --no-deps (voir README.md)."
             )
-        return float(_sre_ism(GT[..., np.newaxis], P[..., np.newaxis]))
+        return float(_sre_ism(as_channels_last(GT), as_channels_last(P)))
     logger.error(f"'algo' inconnu : {algo!r}")
     raise ValueError(f"'algo' inconnu : {algo!r}")
 

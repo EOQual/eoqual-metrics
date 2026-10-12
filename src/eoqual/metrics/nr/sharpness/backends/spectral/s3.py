@@ -41,12 +41,12 @@ __all__        = [
     's3'
 ] # Liste des objets exportés par le module
 
-# IMPORTS STANDARD
-import sys
 from typing import Tuple
 # IMPORTS TIERS
 from loguru import logger
-with logger.catch(onerror=lambda _: sys.exit(1)):
+# reraise : la trace loguru est affichée, puis l'ImportError d'origine est
+# relancée — rattrapable par l'appelant, sans arrêter le processus.
+with logger.catch(reraise=True):
     import numpy as np
     from skimage.color import rgb2gray
     from scipy.ndimage import gaussian_filter
