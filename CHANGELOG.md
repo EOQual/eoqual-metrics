@@ -2,7 +2,7 @@
 
 ## Version History
 
-Non publié
+1.2.0 (2026-10-12)
 
 :   -   **Dynamique des images dans les enveloppes
         image-similarity-measures** : `psnr`, `rmse`, `ssim` reçoivent
