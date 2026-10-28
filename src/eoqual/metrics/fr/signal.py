@@ -9,27 +9,14 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import as_channels_last, initial_check
+from ..core.checker import initial_check, warn_numpy_only
 from .error import mse
 
 try:
-    from skimage.metrics import peak_signal_noise_ratio as _psnr_skimage
-    _SKIMAGE = True
-except ImportError:
-    _SKIMAGE = False
-
-try:
-    from sewar.full_ref import psnr as _psnr_sewar
     from sewar.full_ref import psnrb as _psnrb_sewar
     _SEWAR = True
 except ImportError:
     _SEWAR = False
-
-try:
-    from image_similarity_measures.quality_metrics import psnr as _psnr_ism  # type: ignore
-    _ISM = True
-except ImportError:
-    _ISM = False
 
 
 def snr(
@@ -88,49 +75,26 @@ def psnr(
     P : npt.NDArray
         Image traitée / dégradée.
     algo : str, optional
-        Algorithme à utiliser. Valeurs possibles :
-
-        * ``"numpy"`` (défaut)
-        * ``"skimage"``
-        * ``"metrikz"``
-        * ``"sewar"``
-        * ``"image-similarity-measures"``
+        Seule ``"numpy"`` est implémentée (défaut). Les anciennes
+        alternatives (``"skimage"``, ``"metrikz"``, ``"sewar"``,
+        ``"image-similarity-measures"``) ont été retirées après validation :
+        résultat bit-exact (écart flottant ~1e-8 à grande image, négligeable)
+        et temps de calcul équivalent (voir `REFERENCE_TECHNIQUE.md` §2.2,
+        `formulas.md`). Toute autre valeur est acceptée pour compatibilité
+        ascendante : un avertissement est émis et le calcul est fait avec
+        ``"numpy"``.
 
     Returns
     -------
     float
         Valeur du PSNR en dB. Une valeur plus élevée indique une meilleure qualité.
-
-    Raises
-    ------
-    ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
     """
     GT, P = initial_check(GT, P)
-    if algo == "numpy":
-        rng = float(np.abs(GT.max() - GT.min()))
-        with np.errstate(divide="ignore"):
-            return float(10.0 * np.log10(rng ** 2 / mse(GT, P, algo="numpy")))
-    if algo == "skimage":
-        if not _SKIMAGE:
-            raise ImportError("scikit-image est requis pour algo='skimage'.")
-        pixel_diff = float(np.max(np.maximum(GT, P)) - np.min(np.minimum(GT, P)))
-        return float(_psnr_skimage(GT, P, data_range=pixel_diff))
-    if algo == "metrikz":
-        from ..backends.metrikz.metrikz import psnr as _psnr_metrikz
-        return float(_psnr_metrikz(GT, P))
-    if algo == "sewar":
-        if not _SEWAR:
-            raise ImportError("sewar est requis pour algo='sewar'.")
-        return float(_psnr_sewar(GT, P))
-    if algo == "image-similarity-measures":
-        if not _ISM:
-            raise ImportError("image_similarity_measures est requis.")
-        # max_p = dynamique de la référence (même convention que l'algo
-        # 'numpy') : par défaut, image-similarity-measures suppose 4095.
-        max_p = float(np.abs(GT.max() - GT.min())) or 1.0
-        return float(_psnr_ism(as_channels_last(GT), as_channels_last(P), max_p=max_p))
-    raise ValueError(f"'algo' inconnu : {algo!r}")
+    if algo != "numpy":
+        warn_numpy_only("psnr", algo)
+    rng = float(np.abs(GT.max() - GT.min()))
+    with np.errstate(divide="ignore"):
+        return float(10.0 * np.log10(rng ** 2 / mse(GT, P, algo="numpy")))
 
 
 def psnrb(
@@ -189,8 +153,8 @@ def psnrc(
     P : npt.NDArray
         Image traitée / dégradée de shape ``(H, W, 3)``.
     algo : str, optional
-        Algorithme à utiliser (mêmes options que :func:`psnr`).
-        Par défaut ``"numpy"``.
+        Transmis tel quel à :func:`psnr` pour chaque canal — seule
+        ``"numpy"`` est implémentée (défaut), voir sa docstring.
 
     Returns
     -------

@@ -7,7 +7,9 @@
 Collection de métriques de qualité image (Full-Reference, No-Reference),
 pensée pour l'observation de la Terre — voir
 **[REFERENCE_TECHNIQUE.md](REFERENCE_TECHNIQUE.md)** pour le détail de
-chaque famille (méthode, implémentation, limites, évolutions envisagées),
+chaque famille (méthode, implémentation, limites),
+**[formulas.md](formulas.md)** pour la formule mathématique exacte des
+métriques consolidées en une seule implémentation,
 **[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)** pour la référence bibliographique
 de chaque méthode nommée, et **[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)**
 pour l'audit complet des licences du code tiers.
@@ -133,7 +135,8 @@ list_metrics()  # tableau Rich : métrique, mode, algo par défaut, tous les alg
 | Spectrale / télédétection | `ergas`, `rase`, `sam`, `sre` |
 
 Détail de chaque métrique (principe) : **[REFERENCE_TECHNIQUE.md §2](REFERENCE_TECHNIQUE.md)**.
-Référence bibliographique de chaque méthode nommée : **[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)**.
+Référence bibliographique de chaque méthode nommée : **[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)** —
+formule mathématique des métriques numpy-only : **[formulas.md](formulas.md)**.
 
 ### No-Reference (NR) — évaluer une image seule
 

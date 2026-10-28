@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import as_channels_last, initial_check, rescale_to_full_scale
+from ..core.checker import as_channels_last, initial_check, rescale_to_full_scale, warn_once
 from ..core.image_utils import prepare_image
 
 try:
@@ -202,6 +202,15 @@ def gmsd(
         * ``"numpy"`` (défaut) — niveaux de gris uniquement
         * ``"piq"`` — Apache-2.0, voir ``backends/piq/common.py``
         * ``"IQA_pytorch"`` — legacy
+
+        .. warning::
+           **Ces trois algos ne sont PAS interchangeables** : les résultats
+           divergent (écart mesuré de 3,4 % à 23,7 % selon la taille
+           d'image entre ``numpy`` et ``piq``/``IQA_pytorch``, qui sont
+           entre eux quasi identiques). ``numpy`` est aussi nettement plus
+           lent à grande échelle. Ne pas comparer des scores GMSD calculés
+           avec des algos différents. Voir `REFERENCE_TECHNIQUE.md` §2.5
+           pour le détail et le plan de résolution envisagé.
     return_map : bool, optional
         Si ``True`` et ``algo="numpy"``, retourne la carte GMSD. Par défaut ``True``.
 
@@ -225,6 +234,13 @@ def gmsd(
         return None
 
     GT, P = initial_check(GT, P)
+    warn_once(
+        "gmsd_divergence",
+        "gmsd : les algos 'numpy'/'piq'/'IQA_pytorch' ne donnent PAS le "
+        "même résultat (écart mesuré de 3,4 % à 23,7 % selon la taille "
+        "d'image) — ne pas comparer des scores gmsd calculés avec des "
+        "algos différents. Voir REFERENCE_TECHNIQUE.md §2.5.",
+    )
 
     if algo == "numpy":
         from ..backends.gmsd.numpy_impl import gmsd as _gmsd_numpy
@@ -270,6 +286,15 @@ def issm(
           12 bits (facteur 0.0625 avant Canny à seuils fixes, SSIM sur
           4095) : les images y sont ramenées sur [0, 4095]. Histogramme à
           10 classes, corrélation des contours sans valeur absolue.
+
+        .. warning::
+           **Ces deux algos ne sont PAS interchangeables** — écart mesuré
+           de ~1 % à ~11 % selon la taille d'image, attendu : ``numpy``
+           suit une lecture de l'article jugée plus fidèle (seule à
+           reproduire ses figures), ``image-similarity-measures`` une
+           formule différente. ``numpy`` est aussi ~3× plus lent. Ne pas
+           comparer des scores ISSM calculés avec des algos différents.
+           Voir `REFERENCE_TECHNIQUE.md` §2.5.
     data_range : float, optional
         Dynamique des images. Défaut : dynamique de ``GT``.
     ehs : str, optional
@@ -293,6 +318,13 @@ def issm(
         Si ``algo="image-similarity-measures"`` et le paquet est absent.
     """
     GT, P = initial_check(GT, P)
+    warn_once(
+        "issm_divergence",
+        "issm : les algos 'numpy'/'image-similarity-measures' ne donnent "
+        "PAS le même résultat (écart mesuré de ~1 % à ~11 % selon la "
+        "taille d'image) — ne pas comparer des scores issm calculés avec "
+        "des algos différents. Voir REFERENCE_TECHNIQUE.md §2.5.",
+    )
     if algo == "numpy":
         from ..backends.issm.numpy_impl import issm as _issm_numpy
         return _issm_numpy(GT, P, data_range=data_range, ehs=ehs)

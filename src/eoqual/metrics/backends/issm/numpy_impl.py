@@ -39,7 +39,7 @@ Conséquences de la lecture « comptes » : EHS est négative et de grande
 amplitude (elle croît comme N log N), si bien que
 I ≈ 0.8·C / (0.3·C + 0.5) : l'ISSM est dominé par la corrélation des
 contours, le SSIM ne pesant presque rien. Pour deux images identiques,
-I = 1 + 0.7 / (0.8 |EHS|), soit 1 à 4e-7 près sur 512 × 512.
+I = 1 + 0.7 / (0.8 · abs(EHS)), soit 1 à 4e-7 près sur 512 × 512.
 """
 from __future__ import annotations
 

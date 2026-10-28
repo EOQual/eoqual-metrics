@@ -10,29 +10,20 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import as_channels_last, initial_check
+from ..core.checker import initial_check, warn_numpy_only
 
 # Optional dependencies
 try:
-    from skimage.metrics import mean_squared_error as _mse_skimage
     from skimage.metrics import normalized_root_mse as _nrmse_skimage
     _SKIMAGE = True
 except ImportError:
     _SKIMAGE = False
 
 try:
-    from sewar.full_ref import mse as _mse_sewar
-    from sewar.full_ref import rmse as _rmse_sewar
     from sewar.full_ref import rmse_sw as _rmse_sw_sewar
     _SEWAR = True
 except ImportError:
     _SEWAR = False
-
-try:
-    from image_similarity_measures.quality_metrics import rmse as _rmse_ism  # type: ignore
-    _ISM = True
-except ImportError:
-    _ISM = False
 
 
 def mae(
@@ -121,46 +112,30 @@ def mse(
     P : npt.NDArray
         Image traitée / dégradée.
     algo : str, optional
-        Algorithme à utiliser. Valeurs possibles :
-
-        * ``"numpy"`` (défaut)
-        * ``"skimage"``
-        * ``"metrikz"``
-        * ``"sewar"``
+        Seule ``"numpy"`` est implémentée (défaut). Les anciennes
+        alternatives (``"skimage"``, ``"metrikz"``, ``"sewar"``) ont été
+        retirées après validation : résultat bit-exact et temps de calcul
+        équivalent à la version numpy sur image réelle et synthétique (voir
+        `REFERENCE_TECHNIQUE.md` §2.1, `formulas.md`). Toute autre valeur
+        est acceptée pour compatibilité ascendante : un avertissement est
+        émis et le calcul est fait avec ``"numpy"``.
     return_map : bool, optional
-        Si ``True`` et ``algo="numpy"``, retourne également la carte d'erreur
-        pixel-à-pixel. Par défaut ``False``.
+        Si ``True``, retourne également la carte d'erreur pixel-à-pixel.
+        Par défaut ``False``.
 
     Returns
     -------
     float
         Valeur de la MSE.
     npt.NDArray, optional
-        Carte MSE pixel-à-pixel (uniquement si ``return_map=True`` et ``algo="numpy"``).
-
-    Raises
-    ------
-    ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
+        Carte MSE pixel-à-pixel (uniquement si ``return_map=True``).
     """
     GT, P = initial_check(GT, P)
+    if algo != "numpy":
+        warn_numpy_only("mse", algo)
     diff = (GT.astype(np.float64) - P.astype(np.float64)) ** 2
-
-    if algo == "numpy":
-        value = float(np.mean(diff))
-        return (value, diff) if return_map else value
-    if algo == "skimage":
-        if not _SKIMAGE:
-            raise ImportError("scikit-image est requis pour algo='skimage'.")
-        return float(_mse_skimage(GT, P))
-    if algo == "metrikz":
-        from ..backends.metrikz.metrikz import mse as _mse_metrikz
-        return float(_mse_metrikz(GT, P))
-    if algo == "sewar":
-        if not _SEWAR:
-            raise ImportError("sewar est requis pour algo='sewar'.")
-        return float(_mse_sewar(GT, P))
-    raise ValueError(f"'algo' inconnu : {algo!r}")
+    value = float(np.mean(diff))
+    return (value, diff) if return_map else value
 
 
 def nrmse(
@@ -217,43 +192,31 @@ def rmse(
     P : npt.NDArray
         Image traitée / dégradée.
     algo : str, optional
-        Algorithme à utiliser. Valeurs possibles :
-
-        * ``"numpy"`` (défaut)
-        * ``"metrikz"``
-        * ``"sewar"``
-        * ``"image-similarity-measures"``
+        Seule ``"numpy"`` est implémentée (défaut). ``"metrikz"`` et
+        ``"sewar"`` ont été retirés après validation : résultat bit-exact
+        et temps de calcul équivalent (voir `REFERENCE_TECHNIQUE.md` §2.1,
+        `formulas.md`). ``"image-similarity-measures"`` a également été
+        retiré, mais pour une raison différente : ce n'était **pas** la
+        même métrique malgré le nom — ISM renvoie la RMSE **normalisée**
+        par la dynamique de l'image (``RMSE / (max-min)``, dans ``[0, 1]``)
+        et non la RMSE brute en unités de pixel que renvoient numpy/sewar
+        (écart observé : ~99,6 % sur une image 8 bits, soit un facteur
+        ~256 — cohérent avec cette normalisation). Toute valeur passée ici
+        est acceptée pour compatibilité ascendante : un avertissement est
+        émis et le calcul est fait avec ``"numpy"``.
 
     Returns
     -------
     float
-        Valeur de la RMSE. Une valeur plus faible indique une meilleure qualité.
-
-    Raises
-    ------
-    ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
+        Valeur de la RMSE brute (unités de pixel). Une valeur plus faible
+        indique une meilleure qualité.
     """
     GT, P = initial_check(GT, P)
-    if algo == "numpy":
-        return float(
-            np.sqrt(np.mean((GT.astype(np.float64) - P.astype(np.float64)) ** 2))
-        )
-    if algo == "metrikz":
-        from ..backends.metrikz.metrikz import rmse as _rmse_metrikz
-        return float(_rmse_metrikz(GT, P))
-    if algo == "sewar":
-        if not _SEWAR:
-            raise ImportError("sewar est requis pour algo='sewar'.")
-        return float(_rmse_sewar(GT, P))
-    if algo == "image-similarity-measures":
-        if not _ISM:
-            raise ImportError("image_similarity_measures est requis.")
-        # RMSE normalisée par max_p = dynamique de la référence (au lieu des
-        # 4095 supposés par défaut par image-similarity-measures).
-        max_p = float(np.abs(GT.max() - GT.min())) or 1.0
-        return float(_rmse_ism(as_channels_last(GT), as_channels_last(P), max_p=max_p))
-    raise ValueError(f"'algo' inconnu : {algo!r}")
+    if algo != "numpy":
+        warn_numpy_only("rmse", algo)
+    return float(
+        np.sqrt(np.mean((GT.astype(np.float64) - P.astype(np.float64)) ** 2))
+    )
 
 
 def rmse_sw(

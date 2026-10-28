@@ -9,20 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from loguru import logger
 
-from ..core.checker import as_channels_last, initial_check, versiontuple
-
-try:
-    from scipy.spatial import distance as _scipy_distance
-    from scipy.spatial.distance import cdist as _cdist
-    _SCIPY = True
-except ImportError:
-    _SCIPY = False
-
-try:
-    from sklearn.metrics.pairwise import cosine_similarity as _cosine_similarity
-    _SKLEARN = True
-except ImportError:
-    _SKLEARN = False
+from ..core.checker import as_channels_last, initial_check, versiontuple, warn_numpy_only
 
 try:
     from sewar.full_ref import scc as _scc_sewar
@@ -55,34 +42,26 @@ def ncc(
     P : npt.NDArray
         Image traitée / dégradée.
     algo : str, optional
-        Algorithme à utiliser. Valeurs possibles :
-
-        * ``"numpy"`` (défaut)
-        * ``"scipy"``
+        Seule ``"numpy"`` est implémentée (défaut). ``"scipy"`` a été
+        retiré après validation : résultat quasi bit-exact (écart ~1e-15)
+        et temps de calcul équivalent (voir `REFERENCE_TECHNIQUE.md` §2.4,
+        `formulas.md`). Toute autre valeur est acceptée pour compatibilité
+        ascendante : un avertissement est émis et le calcul est fait avec
+        ``"numpy"``.
 
     Returns
     -------
     float
         Valeur du NCC dans ``[-1, 1]``. Une valeur plus élevée indique une meilleure qualité.
-
-    Raises
-    ------
-    ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
     """
     GT, P = initial_check(GT, P)
+    if algo != "numpy":
+        warn_numpy_only("ncc", algo)
     GT = GT.astype(np.float64)
     P = P.astype(np.float64)
-
-    if algo == "numpy":
-        numerator = np.mean((GT - np.mean(GT)) * (P - np.mean(P)))
-        denom = np.std(GT) * np.std(P)
-        return 0.0 if denom == 0 else float(numerator / denom)
-    if algo == "scipy":
-        if not _SCIPY:
-            raise ImportError("scipy est requis pour algo='scipy'.")
-        return float(1.0 - _scipy_distance.correlation(GT.flatten(), P.flatten()))
-    raise ValueError(f"'algo' inconnu : {algo!r}")
+    numerator = np.mean((GT - np.mean(GT)) * (P - np.mean(P)))
+    denom = np.std(GT) * np.std(P)
+    return 0.0 if denom == 0 else float(numerator / denom)
 
 
 def ndp(
@@ -103,47 +82,29 @@ def ndp(
     P : npt.NDArray
         Image traitée / dégradée.
     algo : str, optional
-        Algorithme à utiliser. Valeurs possibles :
-
-        * ``"numpy"`` (défaut)
-        * ``"scipy_1"``
-        * ``"scipy_2"``
-        * ``"sklearn"``
+        Seule ``"numpy"`` est implémentée (défaut). ``"scipy_1"``,
+        ``"scipy_2"`` et ``"sklearn"`` ont été retirés après validation :
+        résultat quasi bit-exact (écart < 2e-13) et temps de calcul
+        équivalent ou supérieur (voir `REFERENCE_TECHNIQUE.md` §2.4,
+        `formulas.md`) ; ``scikit-learn`` n'était utilisé nulle part
+        ailleurs dans le projet et a été retiré des dépendances. Toute
+        autre valeur est acceptée pour compatibilité ascendante : un
+        avertissement est émis et le calcul est fait avec ``"numpy"``.
 
     Returns
     -------
     float
         Valeur du NDP dans ``[-1, 1]``. Une valeur plus élevée indique une meilleure qualité.
-
-    Raises
-    ------
-    ValueError
-        Si ``algo`` n'est pas reconnu ou si les images sont incompatibles.
     """
     GT, P = initial_check(GT, P)
+    if algo != "numpy":
+        warn_numpy_only("ndp", algo)
     GT = GT.astype(np.float64)
     P = P.astype(np.float64)
-
-    if algo == "numpy":
-        return float(
-            np.dot(GT.flatten(), P.flatten())
-            / (np.linalg.norm(GT) * np.linalg.norm(P))
-        )
-    if algo == "scipy_1":
-        if not _SCIPY:
-            raise ImportError("scipy est requis pour algo='scipy_1'.")
-        return float(1.0 - _scipy_distance.cosine(GT.flatten(), P.flatten()))
-    if algo == "scipy_2":
-        if not _SCIPY:
-            raise ImportError("scipy est requis pour algo='scipy_2'.")
-        return float(
-            1.0 - _cdist(GT.reshape(1, -1), P.reshape(1, -1), "cosine")[0, 0]
-        )
-    if algo == "sklearn":
-        if not _SKLEARN:
-            raise ImportError("scikit-learn est requis pour algo='sklearn'.")
-        return float(_cosine_similarity(GT.reshape(1, -1), P.reshape(1, -1))[0, 0])
-    raise ValueError(f"'algo' inconnu : {algo!r}")
+    return float(
+        np.dot(GT.flatten(), P.flatten())
+        / (np.linalg.norm(GT) * np.linalg.norm(P))
+    )
 
 
 def nmi(

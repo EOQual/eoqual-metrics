@@ -14,7 +14,7 @@ Examples
 >>> from eoqual.metrics.export.csv import save_csv, load_csv
 """
 
-__version__     = "1.2.0"
+__version__     = "1.2.1"
 __title__       = "eoqual.metrics"
 __description__ = "Collection of image quality metrics"
 __url__         = ""

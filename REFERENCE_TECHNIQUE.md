@@ -1,10 +1,11 @@
 # Référence technique — eoqual-metrics
 
 Document de traçabilité de l'ensemble des métriques cataloguées dans
-`eoqual-metrics`. Structure en quatre temps, dans cet ordre
-volontairement : **méthode** (que calcule-t-on, indépendamment du code) →
-**implémentation** (où c'est codé, avec quoi, quel est le défaut) →
-**limites connues** → **évolutions envisagées**.
+`eoqual-metrics`. Corps principal centré sur l'**état actuel** : **méthode**
+(que calcule-t-on, indépendamment du code) → **implémentation** (où c'est
+codé, avec quoi, quel est le défaut) → **limites connues**. La feuille de
+route (non engagée) est reportée en annexe, pour que le corps reste une
+référence sur ce qui existe aujourd'hui plutôt qu'un historique de projet.
 
 Ce document ne remplace pas les docstrings (référence API précise,
 autoapi/Sphinx), `BIBLIOGRAPHY.md` (référence bibliographique complète de
@@ -21,7 +22,7 @@ chaque famille existe et *où* la retrouver — à maintenir à chaque
 3. [No-Reference (NR) — évaluer une image seule](#3-no-reference-nr)
 4. [Reduced-Reference (RR)](#4-reduced-reference-rr)
 5. [Limites transverses](#5-limites-transverses)
-6. [Évolutions envisagées](#6-évolutions-envisagées)
+6. [Annexe — Évolutions envisagées](#annexe--évolutions-envisagées)
 
 ---
 
@@ -62,10 +63,18 @@ Comparent une image traitée `P` à une référence `GT` (même shape).
 racine (`rmse`), médiane (`mdae`), version normalisée par la dynamique
 (`nrmse`), ou calculée par fenêtre glissante (`rmse_sw`).
 
-**Implémentation** : `fr/error.py`. Défauts tous `numpy` (calcul direct),
-sauf `nrmse` (`skimage`, seul algo) et `rmse_sw` (`sewar`, seul algo).
-Alternatives `skimage`/`metrikz`/`sewar`/`image-similarity-measures` pour
-`mse`/`rmse`.
+**Implémentation** : `fr/error.py`. `mae`/`mdae`/`mse`/`rmse` : `numpy`
+seul algo. `nrmse` : `skimage`, seul algo. `rmse_sw` : `sewar`, seul algo.
+`mse`/`rmse` acceptaient auparavant d'autres bibliothèques
+(`skimage`/`metrikz`/`sewar`/`image-similarity-measures`) — retirées
+après validation (résultat bit-exact, temps de calcul équivalent sur
+image réelle et synthétique ; détail dans `formulas.md`), sauf
+`image-similarity-measures` pour `rmse`, qui calculait en réalité une
+*autre* métrique (RMSE normalisée par la dynamique, pas la RMSE brute —
+écart ~99,6 %, cohérent avec une division par ~255). Appeler ces
+fonctions avec un ancien nom d'algo reste accepté (compatibilité
+ascendante) : un avertissement est émis et le calcul se fait avec
+`numpy`.
 
 **Limites** : mesures non perceptuelles (une MSE faible ne garantit pas une
 image visuellement fidèle) — voir §2.3/2.5 pour des alternatives
@@ -78,11 +87,16 @@ perceptuelles. `rmse_sw` : l'algo `map=True` de sewar est désactivé dans
 en dB. `psnrb` ajoute une pénalité de blocking (compression JPEG-like).
 `psnrc` = variante couleur.
 
-**Implémentation** : `fr/signal.py`. Défaut `numpy` pour `snr`/`psnr`/`psnrc` ;
-`sewar` seul algo pour `psnrb` ; `wsnr` (pondération perceptuelle par CSF —
-Contrast Sensitivity Function de Mannos & Sakrison) défaut `numpy`
-(`backends/wsnr/numpy_impl.py`), `metrikz` conservé en
-algo legacy (voir `THIRD_PARTY_LICENSES.md`).
+**Implémentation** : `fr/signal.py`. `psnr`/`psnrc` : `numpy` seul algo —
+`skimage`/`metrikz`/`sewar`/`image-similarity-measures` retirés après
+validation (résultat bit-exact, temps de calcul équivalent ; détail dans
+`formulas.md`) ; un ancien nom d'algo reste accepté (avertissement, calcul
+fait avec `numpy`). `psnrb` : `sewar` seul algo. `snr`/`wsnr`
+(pondération perceptuelle par CSF — Contrast Sensitivity Function de
+Mannos & Sakrison) : défaut `numpy`, `metrikz` conservé en algo legacy —
+vendored dans le projet (pas une dépendance externe), bit-exact et à
+vitesse équivalente à `numpy` sur les mêmes bancs d'essai, mais pas
+encore retiré (voir `THIRD_PARTY_LICENSES.md` pour son statut de licence).
 
 **Limites** : PSNR en général : peu corrélé à la perception humaine
 au-delà d'un ordre de grandeur grossier — préférer SSIM/VIF/DISTS pour une
@@ -122,9 +136,14 @@ ignore toute correspondance spatiale pixel à pixel — utile pour repérer
 un décalage radiométrique global (exposition, calibration capteur,
 conditions atmosphériques) même sur des images mal recalées.
 
-**Implémentation** : `fr/correlation.py`. Défauts `numpy`/`skimage`/`sewar`/`metrikz`
-selon la métrique. `nmi` : seul algo `skimage`. `scc` : seul algo `sewar`.
-`jsd` : seul algo `numpy`.
+**Implémentation** : `fr/correlation.py`. `ncc`/`ndp`/`jsd` : `numpy` seul
+algo — `ncc` acceptait aussi `scipy`, `ndp` acceptait `scipy_1`/`scipy_2`/
+`sklearn` : retirés après validation (résultat quasi bit-exact, écart
+< 2e-13 ; temps de calcul équivalent ; détail dans `formulas.md`) — un
+ancien nom d'algo reste accepté (avertissement, calcul fait avec
+`numpy`). `scikit-learn` n'était utilisé nulle part ailleurs dans le
+projet : retiré des dépendances. `nmi` : seul algo `skimage`. `scc`/`uqi` :
+`sewar` (+ alternatives pour `uqi`, voir §5.2).
 
 **Limites** : peu utilisées en pratique face à SSIM/PSNR — surtout utiles
 en recalage/imagerie multimodale (`nmi`, `ncc`). `jsd` : histogramme
@@ -138,10 +157,12 @@ des métriques structurelles/spatiales.
 **Méthode** : modèles calés sur la perception humaine — `vif` (fidélité
 informationnelle, modèle de canal bruité), `fsim` (congruence de phase +
 gradient), `gmsd` (déviation de similarité de magnitude de gradient),
-`dists`/`lpips_vgg` (réseaux profonds pré-entraînés), `nlpd` (pyramide
-laplacienne normalisée, modèle de la rétine), `pamse`, `mad`, `vsi`
-(saillance visuelle), `reco` (cohérence de phase entre deux harmoniques
-circulaires de Laguerre-Gauss — Baroncini et al. 2009).
+`issm` (entropie de l'histogramme conjoint + SSIM + corrélation de
+contours Canny — Aljanabi et al. 2019), `dists`/`lpips_vgg` (réseaux
+profonds pré-entraînés), `nlpd` (pyramide laplacienne normalisée, modèle
+de la rétine), `pamse`, `mad`, `vsi` (saillance visuelle), `reco`
+(cohérence de phase entre deux harmoniques circulaires de Laguerre-Gauss —
+Baroncini et al. 2009).
 
 **Implémentation** : `fr/perceptual.py`, `fr/ssim.py`. `vif` défaut `sewar`
 (pas de torch nécessaire) ; `gmsd` défaut `numpy` (vendored depuis sporco,
@@ -169,6 +190,44 @@ désormais fonctionnels via `piq` (revenus d'un état cassé de longue date).
 cache ensuite (voir `backends/piq/common.py`). `msssim` (`piq`) requiert
 des images d'au moins 161×161 pixels (5 échelles). `pamse` : seul algo
 `numpy` (vendored sporco, BSD-3-Clause).
+
+**`gmsd` et `issm` : les algos disponibles ne sont PAS interchangeables**
+(contrairement au reste du registre, où `algo=` sélectionne une
+implémentation alternative d'une même définition — voir aussi la note
+équivalente §3.3 pour `sharpness`/`fmeasure`) :
+
+- `gmsd` — `numpy` vs `piq`/`IQA_pytorch` (`piq`/`IQA_pytorch` quasi
+  identiques entre eux) : écart mesuré de 3,4 % (image 256×256) à 23,7 %
+  (2048×2048) — pas du bruit flottant. `numpy` est aussi 6 à 18× plus
+  lent à grande échelle. Les deux côtés prétendent pourtant porter la même
+  implémentation MATLAB de référence (Xue et al. 2014), ce qui rend
+  l'écart d'autant plus suspect.
+- `issm` — `numpy` vs `image-similarity-measures` : écart mesuré de ~1 %
+  (2048×2048) à ~11 % (256×256). Ici l'écart est **voulu** : `numpy`
+  réimplémente ISSM d'après une lecture de l'article jugée plus fidèle
+  (seule à reproduire ses figures, voir docstring du module) —
+  `image-similarity-measures` est considéré moins fidèle, pas équivalent.
+  `numpy` reste ~3× plus lent.
+
+Un avertissement (`logger.warning`, une fois par process) est émis au
+premier appel de `gmsd()`/`issm()` pour rappeler que les scores obtenus
+avec des algos différents ne se comparent pas.
+
+**Plan d'action pour trancher** (non engagé, voir aussi l'annexe en fin de
+document) :
+1. Reconstruire un cas de test à résultat connu (image de référence +
+   dégradation + score publié dans l'article source ou dans une
+   implémentation MATLAB/Python faisant autorité) pour chaque métrique.
+2. Comparer chaque algo disponible à ce résultat de référence plutôt
+   qu'entre eux — l'algo le plus proche devient le défaut, les autres
+   restent disponibles mais documentés comme divergents (statu quo
+   actuel) ou sont retirés si l'écart s'avère être une erreur
+   d'implémentation identifiée.
+3. Pour `gmsd` spécifiquement : vérifier l'hypothèse la plus probable
+   (différence de sous-échantillonnage/mise à l'échelle avant calcul du
+   gradient, point connu de divergence entre portages de l'algorithme de
+   Xue et al.) en comparant les cartes intermédiaires (`return_map=True`)
+   plutôt que seulement le score final.
 
 ### 2.6 Spectrale / télédétection
 
@@ -543,7 +602,7 @@ jugée stable — choix assumé du mainteneur : une trace complète
 silencieux. Conséquence pratique : un batch multi-images s'arrête net à
 la première métrique qui échoue (dépendance manquante, image incompatible...).
 À réévaluer une fois la robustesse sur de gros lots jugée prioritaire par
-rapport au diagnostic fin (voir §6).
+rapport au diagnostic fin (voir l'annexe en fin de document).
 
 ### 5.2 Licences tierces
 
@@ -586,8 +645,8 @@ Trois catégories distinctes, à ne pas confondre :
   réels — voir `CONTRIBUTING.md` pour contribuer une suite.
 
 **Une vraie suite `pytest` n'existe pas encore**, volontairement : le
-registre continue d'évoluer (§6, notamment `aem`/`sasbem` encore en
-développement), et une suite assertive écrite maintenant demanderait
+registre continue d'évoluer (`aem`/`sasbem` encore en développement), et
+une suite assertive écrite maintenant demanderait
 d'être retouchée à chaque évolution de ce type — un coût d'entretien
 prématuré par rapport à la valeur immédiate. `quality/run_tests.sh` reste
 pointé sur `tests/` (commentaire à jour dans le script) : il ne collecte
@@ -599,11 +658,13 @@ lance aucun test.
 
 ---
 
-## 6. Évolutions envisagées
+## Annexe — Évolutions envisagées
 
-Par ordre de valeur/risque décroissant, à discuter et prioriser avec le
-mainteneur — rien ci-dessous n'est engagé. Voir `CONTRIBUTING.md` pour
-proposer ou implémenter l'un de ces points, ou tout autre bug/métrique :
+Feuille de route, pas un état des lieux : contrairement au corps du
+document ci-dessus, rien ici ne décrit le comportement actuel de la
+librairie. Par ordre de valeur/risque décroissant, à discuter et prioriser
+avec le mainteneur — rien ci-dessous n'est engagé. Voir `CONTRIBUTING.md`
+pour proposer ou implémenter l'un de ces points, ou tout autre bug/métrique :
 
 1. **Remédiation licences des algorithmes optionnels restants** — les 5
    algorithmes 🟡 non par défaut (`metrikz`, `ssim_1..4`, voir

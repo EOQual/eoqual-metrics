@@ -2,6 +2,40 @@
 
 ## Version History
 
+1.2.1 (2026-10-28)
+
+:   -   **Aucun changement de résultat de calcul** — version purement
+        technique/documentaire.
+    -   `mse`, `psnr`, `psnrc`, `ncc`, `ndp`, `rmse` : simplifiés à une
+        seule implémentation (`numpy`). Les anciennes alternatives
+        (`skimage`, `sewar`, `scipy`, `scipy_1`, `scipy_2`, `sklearn`,
+        `metrikz`, `image-similarity-measures`) ont été retirées après
+        validation — résultat bit-exact ou quasi (écart machine-epsilon)
+        et temps de calcul équivalent sur image réelle et synthétique
+        (détail dans `formulas.md`). `algo=` reste accepté pour
+        compatibilité ascendante : passer une ancienne valeur émet un
+        avertissement et le calcul se fait avec `numpy`, sans erreur.
+        Exception : l'algo `image-similarity-measures` de `rmse`
+        calculait en réalité une métrique différente (RMSE normalisée
+        plutôt que brute) — son retrait corrige ce décalage.
+    -   `scikit-learn` retiré des dépendances (n'était utilisé que par
+        `ndp(algo="sklearn")`, désormais supprimé).
+    -   `gmsd`/`issm` : non modifiés, mais la divergence numérique entre
+        leurs algos disponibles (`numpy` vs `piq`/`IQA_pytorch` pour
+        `gmsd`, `numpy` vs `image-similarity-measures` pour `issm`) est
+        désormais documentée avec les écarts mesurés
+        (`REFERENCE_TECHNIQUE.md` §2.5) et signalée par un avertissement
+        à l'exécution (une fois par process).
+    -   Nouveau document `formulas.md` : formule mathématique exacte et
+        glossaire de notation commun pour les métriques consolidées en
+        une seule implémentation.
+    -   `REFERENCE_TECHNIQUE.md` restructuré : la feuille de route (non
+        engagée) est déplacée en annexe en fin de document, pour que le
+        corps principal reste centré sur l'état actuel.
+    -   Nettoyage : commentaires morts/périmés dans `pyproject.toml`, bug
+        RST préexistant corrigé (`issm/numpy_impl.py`, substitution
+        `|EHS|` mal interprétée).
+
 1.2.0 (2026-10-12)
 
 :   -   **Dynamique des images dans les enveloppes

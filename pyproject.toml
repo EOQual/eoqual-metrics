@@ -2,7 +2,7 @@
 
 [tool.poetry]
 name = "eoqual-metrics"
-version = "1.2.0"
+version = "1.2.1"
 description = "Collection of image metrics"
 authors = ["Olivier Amram <olivier.amram@free.fr>"]
 maintainers = [
@@ -27,7 +27,6 @@ eoqual-core = {git = "https://github.com/EOQual/eoqual-core.git", tag = "v0.1.0"
 numpy = "*"
 scipy = "*"
 scikit-image = ">0.20.0"
-scikit-learn = "*"
 opencv-python = "*"
 joblib = "*"
 # pyfftw : nécessaire à image-similarity-measures (installé à part, voir
@@ -46,20 +45,17 @@ pyrtools = "^1.0.1"
 rich = "*"
 loguru = "*"
 
-# metrikz : Inclus dans le source ?
-# metrikz = {git = "https://gitlab.com/gpds-unb/pymetrikz"}
+# metrikz : vendored dans src/eoqual/metrics/backends/metrikz/ (pas un
+# paquet pip) — aucune dépendance à déclarer.
 
 # --- Dépendances "deep learning" (extra optionnel, voir [tool.poetry.extras]) ---
-# piq (https://github.com/photosynthesis-team/piq, Apache-2.0,
-# activement plus simple à maintenir que IQA_pytorch) est le backend par
-# défaut pour dists/fsim/gmsd/vif/ssim/msssim/vsi/lpips_vgg. Ne dépend que
-# de torchvision (pas de poids supplémentaires téléchargés au setup —
-# DISTS/LPIPS téléchargent leurs poids VGG16 au premier appel, voir
-# backends/piq/common.py). Attention : `pyiqa` (chaofengc/IQA-PyTorch),
-# une autre bibliothèque explorée un temps (tests/exploratory/pyiqa_rejected_exploration.py), est sous
+# piq (https://github.com/photosynthesis-team/piq, Apache-2.0) est le
+# backend par défaut pour dists/fsim/gmsd/vif/ssim/msssim/vsi/lpips_vgg. Ne
+# dépend que de torchvision (pas de poids supplémentaires téléchargés au
+# setup — DISTS/LPIPS téléchargent leurs poids VGG16 au premier appel, voir
+# backends/piq/common.py). `pyiqa` (chaofengc/IQA-PyTorch) est écarté :
 # licence PolyForm-Noncommercial-1.0.0 — PAS open-source, usage commercial
-# interdit — volontairement écarté au profit de piq (voir
-# THIRD_PARTY_LICENSES.md).
+# interdit (voir THIRD_PARTY_LICENSES.md).
 #
 # IQA_pytorch (https://github.com/dingkeyan93/IQA-optimization, MIT) reste
 # disponible en algo legacy — seul backend encore utile pour `nlpd` (piq
@@ -79,7 +75,6 @@ IQA_pytorch = {version = "*", optional = true}   # https://github.com/dingkeyan9
 
 image-quality = {version="*", optional=true}
 brisque = {version="^0.0.15", optional=true}
-#pywavelets = "^1.8.0"
 Pywavelets = "*"
 pandas = "^2.2.3"
 

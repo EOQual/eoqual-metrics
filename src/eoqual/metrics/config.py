@@ -32,9 +32,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'mse': {
         'algo': [
             {'name': 'numpy'},
-            {'name': 'skimage'},
-            {'name': 'metrikz'},
-            {'name': 'sewar'},
         ],
         'default': 'numpy',
         'metric_mode': 'FR',
@@ -51,9 +48,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'rmse': {
         'algo': [
             {'name': 'numpy'},
-            {'name': 'metrikz'},
-            {'name': 'sewar'},
-            {'name': 'image-similarity-measures'},
         ],
         'default': 'numpy',
         'metric_mode': 'FR',
@@ -82,10 +76,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'psnr': {
         'algo': [
             {'name': 'numpy'},
-            {'name': 'skimage'},
-            {'name': 'metrikz'},
-            {'name': 'sewar'},
-            {'name': 'image-similarity-measures'},
         ],
         'default': 'numpy',
         'metric_mode': 'FR',
@@ -100,10 +90,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'psnrc': {
         'algo': [
             {'name': 'numpy', 'only': 'RGB'},
-            {'name': 'skimage', 'only': 'RGB'},
-            {'name': 'metrikz', 'only': 'RGB'},
-            {'name': 'sewar', 'only': 'RGB'},
-            {'name': 'image-similarity-measures', 'only': 'RGB'}
         ],
         'default': 'numpy',
         'metric_mode': 'FR',
@@ -165,7 +151,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'ncc': {
         'algo': [
             {'name': 'numpy'},
-            {'name': 'scipy'},
         ],
         'default': 'numpy',
         'metric_mode': 'FR',
@@ -174,9 +159,6 @@ METRICS_CONFIGS: OrderedDict = OrderedDict({
     'ndp': {
         'algo': [
             {'name': 'numpy'},
-            {'name': 'scipy_1'},
-            {'name': 'scipy_2'},
-            {'name': 'sklearn'},
         ],
         'default': 'numpy',
         'metric_mode': 'FR',

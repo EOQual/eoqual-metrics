@@ -8,10 +8,11 @@ de dépendances.
 
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Set, Tuple
 
 import numpy as np
 import numpy.typing as npt
+from loguru import logger
 
 
 def initial_check(
@@ -112,3 +113,38 @@ def rescale_to_full_scale(
         data_range = 1.0
     scale = full_scale / data_range
     return (np.asarray(GT, dtype=np.float64) - low) * scale, (np.asarray(P, dtype=np.float64) - low) * scale
+
+
+_WARNED_ONCE: Set[str] = set()
+
+
+def warn_once(key: str, message: str) -> None:
+    """
+    Émet un ``logger.warning`` au plus une fois par clé, pour la durée du
+    process — évite de noyer les journaux d'un traitement par lot
+    (``MetricsRunner`` sur de nombreuses paires d'images) avec le même
+    avertissement répété à chaque appel.
+    """
+    if key in _WARNED_ONCE:
+        return
+    _WARNED_ONCE.add(key)
+    logger.warning(message)
+
+
+def warn_numpy_only(metric_name: str, algo: str) -> None:
+    """
+    Avertit que seule l'implémentation ``"numpy"`` est maintenue pour
+    ``metric_name`` et que le calcul est effectué avec elle quelle que soit
+    la valeur de ``algo`` demandée.
+
+    Les anciennes alternatives (bibliothèques tierces) ont été retirées
+    après validation : résultat (écart machine-epsilon ou nul) et temps de
+    calcul statistiquement équivalents à la version numpy, sur image réelle
+    et synthétique — voir `REFERENCE_TECHNIQUE.md` et `formulas.md`.
+    """
+    logger.warning(
+        f"{metric_name}(algo={algo!r}) : seule l'implémentation 'numpy' est "
+        f"maintenue pour cette métrique (résultat et temps de calcul validés "
+        f"équivalents aux anciennes alternatives) — calcul effectué avec "
+        f"'numpy'."
+    )
