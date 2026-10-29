@@ -14,9 +14,12 @@ import eoqual.metrics as m  # noqa: E402
 ISM = "image-similarity-measures"
 # nom dans eoqual.metrics -> nom dans image-similarity-measures. Comparaison
 # directe seulement pour les fonctions sans hypothèse de dynamique ; psnr,
-# rmse, ssim, fsim et issm sont testées pour leur indépendance à l'échelle.
+# ssim, fsim et issm sont testées pour leur indépendance à l'échelle.
+# rmse n'en fait plus partie depuis la 1.2.1 : algo=ISM (RMSE normalisée,
+# une autre métrique) a été retiré, la RMSE brute est proportionnelle à
+# l'échelle par définition (voir test_rmse_ism_falls_back_to_raw_rmse).
 DIRECT = {"uqi": "uiq", "sre": "sre", "sam": "sam"}
-SCALE_DEPENDENT = ("psnr", "rmse", "ssim", "fsim", "issm")
+SCALE_DEPENDENT = ("psnr", "ssim", "fsim", "issm")
 
 
 @pytest.fixture(scope="module")
@@ -67,6 +70,14 @@ def test_independent_of_value_scale(images, name):
     reference = getattr(m, name)(gt, p, ISM)
     for scale in (1 / 255, 16.0):
         assert getattr(m, name)(gt * scale, p * scale, ISM) == pytest.approx(reference, rel=1e-6)
+
+
+def test_rmse_ism_falls_back_to_raw_rmse(images):
+    # Depuis la 1.2.1, algo=ISM avertit et calcule la RMSE brute (numpy).
+    gt, p = (x.mean(axis=2) for x in images)
+    raw = m.rmse(gt, p, "numpy")
+    assert m.rmse(gt, p, ISM) == pytest.approx(raw, rel=1e-12)
+    assert m.rmse(gt * 16.0, p * 16.0, ISM) == pytest.approx(16.0 * raw, rel=1e-6)
 
 
 def test_psnr_ssim_match_default_algorithms(images):
