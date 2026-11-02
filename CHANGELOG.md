@@ -2,6 +2,19 @@
 
 ## Version History
 
+1.2.2 (2026-11-02)
+
+:   -   **Aucun changement de résultat de calcul.** Dépendance
+        `eoqual-core` relevée de 0.1.0 à 0.4.0 (purement additif côté
+        core — `kernel`, `noise`, `psf.integrated_profile`/
+        `airy_radius_px`/`supersampled_coverage` — rien utilisé ici ;
+        eoqual-metrics ne consomme que `fourier`
+        (`dequantize`/`perdecomp`), `edge` et `tiling.tile_bounds`,
+        inchangés). Nécessaire pour qu'eoqual-deconvolution (qui dépend
+        des deux) résolve ses dépendances — les deux épinglaient des
+        tags `eoqual-core` différents, bloquant `poetry lock`. Suite
+        complète revérifiée (29 tests, aucune régression).
+
 1.2.1 (2026-10-28)
 
 :   -   **Aucun changement de résultat de calcul** — version purement
