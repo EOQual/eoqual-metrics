@@ -2,6 +2,14 @@
 
 ## Version History
 
+1.2.3 (2026-11-08)
+
+:   -   **Aucun changement de résultat de calcul.** Dépendance
+        `eoqual-core` relevée de 0.4.0 à 0.5.0 (purement additive côté
+        core : nouveau module `pupil`, rien utilisé ici). Nécessaire
+        pour qu'eoqual-deconvolution 0.4.0, qui dépend des deux et passe
+        à core 0.5.0, résolve ses dépendances.
+
 1.2.2 (2026-11-02)
 
 :   -   **Aucun changement de résultat de calcul.** Dépendance
