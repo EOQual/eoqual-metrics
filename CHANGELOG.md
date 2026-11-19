@@ -2,6 +2,33 @@
 
 ## Version History
 
+1.2.4 (2026-11-19)
+
+:   -   **Fix `s3` (Spectral and Spatial Sharpness)** : la mesure
+        spectrale et la mesure spatiale par bloc étaient réétalées en
+        min-max sur les blocs de l'image **en cours de traitement**,
+        rendant le score non comparable entre images et non monotone avec
+        le niveau de flou d'une seule image (vérifié : le score
+        augmentait sur la majeure partie d'une plage de flou croissant
+        testée, au lieu de diminuer). Remplacé par deux transformations
+        indépendantes de l'image (`-pente` spectrale, `log1p` de la
+        variation totale) — monotone décroissant sur toute la plage
+        testée, à l'exception d'un léger résidu entre une image
+        parfaitement nette et un flou d'environ 1 pixel (artefact connu
+        de contenu proche de Nyquist sur les mesures spectrales, pas
+        spécifique à cette correction). **Change les valeurs renvoyées
+        par `sharpness(algo="s3")`** par rapport aux versions
+        précédentes — voir `REFERENCE_TECHNIQUE.md` §3.3.c et la
+        docstring du module pour le détail.
+    -   Nouvel exemple `examples/batch_sharpness_assessment.py` :
+        évaluation par lot de la netteté d'un répertoire d'images RGB
+        TIFF (7 métriques choisies pour leur complémentarité — gradient,
+        spectrale, perceptuelle validée par tests subjectifs,
+        satellite calibrée), export CSV.
+    -   `examples/one_metric_cli.py` : exemple d'usage corrigé
+        (`--algo tenengrad` → `tenengrad_otsu`, reliquat du renommage de
+        la 1.1.0).
+
 1.2.3 (2026-11-08)
 
 :   -   **Aucun changement de résultat de calcul.** Dépendance

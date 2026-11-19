@@ -24,6 +24,27 @@ Les scores spatiaux et spectraux sont ensuite combinés pour créer une
 carte de netteté locale, puis un score global est calculé, généralement
 en utilisant le 90e percentile de ces scores locaux.
 
+Bug corrigé (normalisation)
+----------------------------
+Les deux mesures par bloc étaient auparavant réétalées en min-max sur les
+blocs de l'image **en cours de traitement** avant combinaison — chaque
+image repartait donc sur sa propre échelle [0, 1], rendant le score non
+comparable entre images, et même non monotone avec le niveau de flou
+d'une seule image (vérifié : le score augmentait sur une bonne partie de
+la plage de flou testée au lieu de diminuer). Remplacé par deux
+transformations indépendantes de l'image (``-pente`` pour la mesure
+spectrale, ``log1p`` pour la variation totale, afin de ramener les deux
+mesures à un ordre de grandeur comparable) — strictement monotones, sans
+dépendre des autres blocs. Comportement vérifié : monotone décroissant
+avec un flou gaussien croissant sur deux images réelles et une image
+synthétique, à l'exception d'un léger rebond entre une image parfaitement
+nette et un flou de l'ordre d'un pixel (artefact probable de contenu
+proche de Nyquist dans la pente spectrale, un comportement documenté pour
+plusieurs mesures de netteté fondées sur le spectre — pas spécifique à
+cette correction). Ce n'est **pas** une reproduction du calibrage exact
+de Vu & Chandler (constantes de la publication non disponibles ici) :
+une heuristique corrigée, pas un portage fidèle au pixel près.
+
 Links
 -----
 
@@ -155,21 +176,34 @@ def s3_index(image: np.ndarray, block_size: int = 32) -> float:
     if len(spectral_slopes) == 0:
         return 0.0
 
-    # Normalisation des mesures
-    min_slope = np.min(spectral_slopes)
-    max_slope = np.max(spectral_slopes)
-    normalized_slopes = (spectral_slopes - min_slope) / (max_slope - min_slope + 1e-10)
+    # Normalisation des mesures — PAS un min-max par image (bug corrigé :
+    # réétaler chaque image sur sa propre échelle [0, 1] la rendait non
+    # comparable à une autre image, et même non monotone avec le niveau de
+    # flou global d'UNE SEULE image — deux versions plus ou moins floues
+    # de la même scène pouvaient obtenir un score similaire, voire
+    # inversé, car chaque appel repart de zéro sur min/max(blocs de CETTE
+    # image). Transformations ci-dessous : indépendantes des autres blocs
+    # et des autres images, strictement monotones dans le sens netteté.
+    #
+    # -slope : une pente spectrale moins raide (moins négative) signifie
+    # plus de contenu haute fréquence conservé, donc une image plus nette.
+    # Toujours >= 0 sur une image naturelle non constante (clip en
+    # garde-fou pour les cas dégénérés).
+    spectral_sharpness = np.clip(-spectral_slopes, 0.0, None)
 
-    min_tv = np.min(total_variations)
-    max_tv = np.max(total_variations)
-    normalized_tv = (total_variations - min_tv) / (max_tv - min_tv + 1e-10)
+    # Variation totale compressée en log (log1p) : sans cela, son ordre de
+    # grandeur (typiquement plusieurs milliers) écrase presque totalement
+    # la contribution spectrale (typiquement < 10) dans le produit
+    # ci-dessous. Transformation strictement croissante, ne change pas le
+    # sens de la mesure.
+    spatial_sharpness = np.log1p(total_variations)
 
     # Combinaison des mesures pour la carte de netteté locale
-    local_sharpness = np.sqrt(normalized_slopes * normalized_tv)
-    
+    local_sharpness = np.sqrt(spectral_sharpness * spatial_sharpness)
+
     # Pooling des résultats (percentile 90e comme suggéré dans des implémentations similaires)
-    s3_score = np.percentile(local_sharpness, 90)
-    
+    s3_score = float(np.percentile(local_sharpness, 90))
+
     return s3_score
 
 

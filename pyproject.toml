@@ -2,7 +2,7 @@
 
 [tool.poetry]
 name = "eoqual-metrics"
-version = "1.2.3"
+version = "1.2.4"
 description = "Collection of image metrics"
 authors = ["Olivier Amram <olivier.amram@free.fr>"]
 maintainers = [

@@ -432,7 +432,11 @@ méthode décrite ci-dessus en une seule version — pas de doublon avec
 
 **Limites** : `mtf` renvoie `insufficient=True`/score 0.0 sur une scène
 sans arête exploitable (comportement voulu, pas un bug). `s3` : seuil de
-blocs fixe (32×32), non paramétrable depuis la façade.
+blocs fixe (32×32), non paramétrable depuis la façade. `s3` présentait un
+bug de normalisation (réétalement min-max par image, rendant le score non
+monotone avec le flou sur une bonne partie de la plage testée) — corrigé,
+voir la docstring du module pour le détail et un résidu mineur de
+non-monotonicité entre une image nette et un flou d'environ 1 pixel.
 
 #### 3.3.d Perceptuelle (librairie externe)
 

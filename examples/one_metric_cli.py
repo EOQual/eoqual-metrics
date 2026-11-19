@@ -12,7 +12,7 @@ Usage
 
     # Métrique NR (sans GT) :
     PYTHONPATH=src python examples/one_metric_cli.py \\
-        --P tests/images/r1.png --metric sharpness --algo tenengrad
+        --P tests/images/r1.png --metric sharpness --algo tenengrad_otsu
 """
 __author__  = "Olivier Amram"
 __version__ = "20260509"
