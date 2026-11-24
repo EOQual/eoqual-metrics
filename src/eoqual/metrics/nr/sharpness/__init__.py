@@ -23,7 +23,7 @@ implémentation alternative d'une même définition mathématique (ex.
 quantité), les valeurs d'`algo` ci-dessous sont des **méthodes de mesure
 différentes** — pas des implémentations interchangeables d'une même
 "netteté". Deux algos peuvent classer deux images dans un ordre différent ;
-voir `BIBLIOGRAPHY.md` pour la référence de chaque méthode.
+voir `docs/technique/bibliographie.md` pour la référence de chaque méthode.
 
 **Attention aux faux amis avec** :func:`eoqual.metrics.nr.focus_fmeasure.fmeasure` :
 ``tenengrad_otsu``/``brenner_vertical``/``laplacian`` partagent une filiation
@@ -55,7 +55,7 @@ def sharpness(
        sélectionne pas ici une implémentation alternative d'une même
        définition, mais une **méthode de mesure différente** — les
        valeurs ne sont pas interchangeables. Voir la docstring du module
-       et `BIBLIOGRAPHY.md`.
+       et `docs/technique/bibliographie.md`.
 
     Parameters
     ----------

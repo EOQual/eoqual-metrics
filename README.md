@@ -6,11 +6,11 @@
 
 Collection de métriques de qualité image (Full-Reference, No-Reference),
 pensée pour l'observation de la Terre — voir
-**[REFERENCE_TECHNIQUE.md](REFERENCE_TECHNIQUE.md)** pour le détail de
+**[référence technique](docs/technique/reference.md)** pour le détail de
 chaque famille (méthode, implémentation, limites),
-**[formulas.md](formulas.md)** pour la formule mathématique exacte des
+**[formulaire](docs/technique/formulaire.md)** pour la formule mathématique exacte des
 métriques consolidées en une seule implémentation,
-**[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)** pour la référence bibliographique
+**[bibliographie](docs/technique/bibliographie.md)** pour la référence bibliographique
 de chaque méthode nommée, et **[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)**
 pour l'audit complet des licences du code tiers.
 
@@ -134,9 +134,9 @@ list_metrics()  # tableau Rich : métrique, mode, algo par défaut, tous les alg
 | Perceptuelle | `dists`, `fsim`, `gmsd`, `issm`, `lpips_vgg`, `mad`, `nlpd`, `pamse`, `reco`, `vif`, `vsi` |
 | Spectrale / télédétection | `ergas`, `rase`, `sam`, `sre` |
 
-Détail de chaque métrique (principe) : **[REFERENCE_TECHNIQUE.md §2](REFERENCE_TECHNIQUE.md)**.
-Référence bibliographique de chaque méthode nommée : **[BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)** —
-formule mathématique des métriques numpy-only : **[formulas.md](formulas.md)**.
+Détail de chaque métrique (principe) : **[référence technique §2](docs/technique/reference.md)**.
+Référence bibliographique de chaque méthode nommée : **[bibliographie](docs/technique/bibliographie.md)** —
+formule mathématique des métriques numpy-only : **[formulaire](docs/technique/formulaire.md)**.
 
 ### No-Reference (NR) — évaluer une image seule
 
@@ -155,9 +155,9 @@ formule mathématique des métriques numpy-only : **[formulas.md](formulas.md)**
       statistique robuste (MAD) et un indice de fiabilité.
 - **Calcul par tuiles** (opt-in, toute métrique NR) :
   `eoqual.metrics.compute_score_on_tiles(...)` — voir
-  `REFERENCE_TECHNIQUE.md §3.4` et `examples/tiled_vs_full_image.py`.
+  [référence technique](docs/technique/reference.md) §3.4` et `examples/tiled_vs_full_image.py`.
 
-Détail : **[REFERENCE_TECHNIQUE.md §3](REFERENCE_TECHNIQUE.md)**.
+Détail : **[référence technique §3](docs/technique/reference.md)**.
 
 ### Reduced-Reference (RR)
 

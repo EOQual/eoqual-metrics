@@ -79,8 +79,8 @@ def psnr(
         alternatives (``"skimage"``, ``"metrikz"``, ``"sewar"``,
         ``"image-similarity-measures"``) ont été retirées après validation :
         résultat bit-exact (écart flottant ~1e-8 à grande image, négligeable)
-        et temps de calcul équivalent (voir `REFERENCE_TECHNIQUE.md` §2.2,
-        `formulas.md`). Toute autre valeur est acceptée pour compatibilité
+        et temps de calcul équivalent (voir `docs/technique/reference.md` §2.2,
+        `docs/technique/formulaire.md`). Toute autre valeur est acceptée pour compatibilité
         ascendante : un avertissement est émis et le calcul est fait avec
         ``"numpy"``.
 

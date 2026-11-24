@@ -8,10 +8,10 @@ traitement du signal / télédétection, pas des méthodes attribuables à un
 article précis.
 
 Ce document est la source de vérité pour les citations complètes ;
-`REFERENCE_TECHNIQUE.md` et les docstrings n'en gardent qu'un rappel
+[référence technique](reference.md) et les docstrings n'en gardent qu'un rappel
 court (auteur, année). Les docstrings de chaque module restent la source
 technique de référence (formule exacte, paramètres) ; voir aussi
-`formulas.md` pour la formule mathématique des métriques consolidées en
+[formulaire](formulaire.md) pour la formule mathématique des métriques consolidées en
 une seule implémentation (`mse`, `rmse`, `psnr`, `psnrc`, `ncc`, `ndp`).
 
 > Certaines entrées sont marquées **réf. incomplète** : la citation

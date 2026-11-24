@@ -140,7 +140,7 @@ def warn_numpy_only(metric_name: str, algo: str) -> None:
     Les anciennes alternatives (bibliothèques tierces) ont été retirées
     après validation : résultat (écart machine-epsilon ou nul) et temps de
     calcul statistiquement équivalents à la version numpy, sur image réelle
-    et synthétique — voir `REFERENCE_TECHNIQUE.md` et `formulas.md`.
+    et synthétique — voir `docs/technique/reference.md` et `docs/technique/formulaire.md`.
     """
     logger.warning(
         f"{metric_name}(algo={algo!r}) : seule l'implémentation 'numpy' est "

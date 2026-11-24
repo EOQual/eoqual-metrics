@@ -209,7 +209,7 @@ def gmsd(
            d'image entre ``numpy`` et ``piq``/``IQA_pytorch``, qui sont
            entre eux quasi identiques). ``numpy`` est aussi nettement plus
            lent à grande échelle. Ne pas comparer des scores GMSD calculés
-           avec des algos différents. Voir `REFERENCE_TECHNIQUE.md` §2.5
+           avec des algos différents. Voir `docs/technique/reference.md` §2.5
            pour le détail et le plan de résolution envisagé.
     return_map : bool, optional
         Si ``True`` et ``algo="numpy"``, retourne la carte GMSD. Par défaut ``True``.
@@ -239,7 +239,7 @@ def gmsd(
         "gmsd : les algos 'numpy'/'piq'/'IQA_pytorch' ne donnent PAS le "
         "même résultat (écart mesuré de 3,4 % à 23,7 % selon la taille "
         "d'image) — ne pas comparer des scores gmsd calculés avec des "
-        "algos différents. Voir REFERENCE_TECHNIQUE.md §2.5.",
+        "algos différents. Voir docs/technique/reference.md §2.5.",
     )
 
     if algo == "numpy":
@@ -294,7 +294,7 @@ def issm(
            reproduire ses figures), ``image-similarity-measures`` une
            formule différente. ``numpy`` est aussi ~3× plus lent. Ne pas
            comparer des scores ISSM calculés avec des algos différents.
-           Voir `REFERENCE_TECHNIQUE.md` §2.5.
+           Voir `docs/technique/reference.md` §2.5.
     data_range : float, optional
         Dynamique des images. Défaut : dynamique de ``GT``.
     ehs : str, optional
@@ -323,7 +323,7 @@ def issm(
         "issm : les algos 'numpy'/'image-similarity-measures' ne donnent "
         "PAS le même résultat (écart mesuré de ~1 % à ~11 % selon la "
         "taille d'image) — ne pas comparer des scores issm calculés avec "
-        "des algos différents. Voir REFERENCE_TECHNIQUE.md §2.5.",
+        "des algos différents. Voir docs/technique/reference.md §2.5.",
     )
     if algo == "numpy":
         from ..backends.issm.numpy_impl import issm as _issm_numpy

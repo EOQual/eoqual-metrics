@@ -72,7 +72,7 @@ remédiation envisageable.
 | `backends/ssim/mssim_impl.py` | `msssim` algo `msssim_2` | 4og/mssim | MIT |
 | `nr/sharpness/backends/phase/{psi,sharpness_index,lpc_si}.py`, `backends/spectral/s3.py` | `sharpness` (algos `psi`, `sharpness_index`, `lpc_si`, `s3`) | Réimplémentations originales d'Olivier Amram | MIT (auteur du dépôt) |
 | `backends/piq/common.py` (dépendance `piq`) | `dists`, `fsim`, `gmsd`, `vif`, `ssim`, `msssim`, `vsi`, `lpips_vgg` (défaut ou algo `piq`) | photosynthesis-team/piq | **Apache-2.0** (vérifié) |
-| `backends/{wsnr,reco,niqe,piqe,brisque}/numpy_impl.py`, `nr/focus_fmeasure.py` | `wsnr`, `reco`, `niqe`, `piqe`, `brisque` (défauts), `fmeasure` (27 opérateurs) | Réimplémentations propres, écrites depuis la description publiée de chaque algorithme (voir `REFERENCE_TECHNIQUE.md`) | MIT (auteur du dépôt) |
+| `backends/{wsnr,reco,niqe,piqe,brisque}/numpy_impl.py`, `nr/focus_fmeasure.py` | `wsnr`, `reco`, `niqe`, `piqe`, `brisque` (défauts), `fmeasure` (27 opérateurs) | Réimplémentations propres, écrites depuis la description publiée de chaque algorithme (voir [référence technique](docs/technique/reference.md)) | MIT (auteur du dépôt) |
 
 Les modèles pré-entraînés de NIQE (`backends/niqe/models/modelparameters.mat`)
 et BRISQUE (`backends/brisque/models/allmodel`) sont des paramètres

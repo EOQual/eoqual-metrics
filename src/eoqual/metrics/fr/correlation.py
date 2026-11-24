@@ -44,8 +44,8 @@ def ncc(
     algo : str, optional
         Seule ``"numpy"`` est implémentée (défaut). ``"scipy"`` a été
         retiré après validation : résultat quasi bit-exact (écart ~1e-15)
-        et temps de calcul équivalent (voir `REFERENCE_TECHNIQUE.md` §2.4,
-        `formulas.md`). Toute autre valeur est acceptée pour compatibilité
+        et temps de calcul équivalent (voir `docs/technique/reference.md` §2.4,
+        `docs/technique/formulaire.md`). Toute autre valeur est acceptée pour compatibilité
         ascendante : un avertissement est émis et le calcul est fait avec
         ``"numpy"``.
 
@@ -85,8 +85,8 @@ def ndp(
         Seule ``"numpy"`` est implémentée (défaut). ``"scipy_1"``,
         ``"scipy_2"`` et ``"sklearn"`` ont été retirés après validation :
         résultat quasi bit-exact (écart < 2e-13) et temps de calcul
-        équivalent ou supérieur (voir `REFERENCE_TECHNIQUE.md` §2.4,
-        `formulas.md`) ; ``scikit-learn`` n'était utilisé nulle part
+        équivalent ou supérieur (voir `docs/technique/reference.md` §2.4,
+        `docs/technique/formulaire.md`) ; ``scikit-learn`` n'était utilisé nulle part
         ailleurs dans le projet et a été retiré des dépendances. Toute
         autre valeur est acceptée pour compatibilité ascendante : un
         avertissement est émis et le calcul est fait avec ``"numpy"``.

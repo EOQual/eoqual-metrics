@@ -4,8 +4,8 @@ Formule mathématique exacte de chaque métrique consolidée en une seule
 implémentation (`numpy`), avec un glossaire de notation commun. Portée
 volontairement limitée à ces métriques pour l'instant, plutôt que
 d'essayer de couvrir les 41 métriques du registre d'un coup et de risquer
-de ne pas pouvoir tenir ce document à jour — voir `REFERENCE_TECHNIQUE.md`
-pour la méthode de chaque famille, `BIBLIOGRAPHY.md` pour les références
+de ne pas pouvoir tenir ce document à jour — voir [référence technique](reference.md)
+pour la méthode de chaque famille, [bibliographie](bibliographie.md) pour les références
 bibliographiques (ce document ne les répète pas).
 
 ## Glossaire de notation
@@ -87,9 +87,9 @@ orthogonaux, `-1` = opposés. Plus élevé = meilleure qualité.
 
 ---
 
-*Les six métriques ci-dessus n'acceptent plus qu'un seul algorithme
-(`"numpy"`) depuis l'audit documenté dans `REFERENCE_TECHNIQUE.md` §2.1/
-§2.2/§2.4 : les anciennes alternatives (bibliothèques tierces) donnaient
+*Les six métriques ci-dessus n'ont qu'un seul algorithme (`"numpy"`),
+d'après l'audit documenté dans la [référence technique](reference.md) §2.1/
+§2.2/§2.4 : les alternatives (bibliothèques tierces) donnent
 un résultat statistiquement identique pour un temps de calcul équivalent
-— les garder n'apportait rien, sauf pour l'algo `image-similarity-measures`
-de `rmse`, qui calculait en réalité une métrique différente (voir §2.1).*
+— les garder n'apporterait rien ; l'algo `image-similarity-measures`
+de `rmse` calcule en réalité une métrique différente (voir §2.1).*
