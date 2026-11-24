@@ -6,7 +6,7 @@
 
 Collection de métriques de qualité image (Full-Reference, No-Reference),
 pensée pour l'observation de la Terre — voir
-**[référence technique](docs/technique/reference.md)** pour le détail de
+**[documents techniques](docs/technique/index.md)** pour le détail de
 chaque famille (méthode, implémentation, limites),
 **[formulaire](docs/technique/formulaire.md)** pour la formule mathématique exacte des
 métriques consolidées en une seule implémentation,
@@ -134,7 +134,7 @@ list_metrics()  # tableau Rich : métrique, mode, algo par défaut, tous les alg
 | Perceptuelle | `dists`, `fsim`, `gmsd`, `issm`, `lpips_vgg`, `mad`, `nlpd`, `pamse`, `reco`, `vif`, `vsi` |
 | Spectrale / télédétection | `ergas`, `rase`, `sam`, `sre` |
 
-Détail de chaque métrique (principe) : **[référence technique §2](docs/technique/reference.md)**.
+Détail de chaque métrique (principe) : **[Full-Reference](docs/technique/full-reference.md)**.
 Référence bibliographique de chaque méthode nommée : **[bibliographie](docs/technique/bibliographie.md)** —
 formule mathématique des métriques numpy-only : **[formulaire](docs/technique/formulaire.md)**.
 
@@ -155,9 +155,9 @@ formule mathématique des métriques numpy-only : **[formulaire](docs/technique/
       statistique robuste (MAD) et un indice de fiabilité.
 - **Calcul par tuiles** (opt-in, toute métrique NR) :
   `eoqual.metrics.compute_score_on_tiles(...)` — voir
-  [référence technique](docs/technique/reference.md) §3.4` et `examples/tiled_vs_full_image.py`.
+  [référence technique](docs/technique/no-reference.md) §3.4` et `examples/tiled_vs_full_image.py`.
 
-Détail : **[référence technique §3](docs/technique/reference.md)**.
+Détail : **[No-Reference](docs/technique/no-reference.md)**.
 
 ### Reduced-Reference (RR)
 

@@ -17,7 +17,7 @@ avec a, b, c = 0.3, 0.5, 0.7 ; C la corrélation (en valeur absolue) des
 cartes de contours de Canny (éq. 14) ; EHS l'entropie du histogramme
 conjoint (éq. 13) ; S le SSIM (éq. 1, L = 255).
 
-Choix là où l'article est muet ou incohérent (voir docs/technique/reference.md) :
+Choix là où l'article est muet ou incohérent (voir docs/technique/full-reference.md §2.5) :
 
 - **EHS** : les équations (10)-(13) normalisent le histogramme conjoint
   (probabilités), mais avec cette lecture deux images identiques donnent

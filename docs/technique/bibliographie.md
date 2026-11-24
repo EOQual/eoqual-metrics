@@ -8,7 +8,7 @@ traitement du signal / télédétection, pas des méthodes attribuables à un
 article précis.
 
 Ce document est la source de vérité pour les citations complètes ;
-[référence technique](reference.md) et les docstrings n'en gardent qu'un rappel
+[documents techniques](index.md) et les docstrings n'en gardent qu'un rappel
 court (auteur, année). Les docstrings de chaque module restent la source
 technique de référence (formule exacte, paramètres) ; voir aussi
 [formulaire](formulaire.md) pour la formule mathématique des métriques consolidées en

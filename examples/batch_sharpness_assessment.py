@@ -3,7 +3,7 @@
 """
 Exemple d'utilisation — évaluation par lot de la netteté d'un répertoire
 d'images RGB TIFF. Script de démonstration, PAS un test automatisé (voir
-docs/technique/reference.md §5.4).
+docs/technique/limites.md §5.4).
 
 Parcourt un répertoire, convertit chaque image en niveaux de gris, calcule
 plusieurs métriques No-Reference de netteté reconnues comme fiables
@@ -12,7 +12,7 @@ plusieurs métriques No-Reference de netteté reconnues comme fiables
 
 Choix des métriques
 --------------------
-`eoqual.metrics.sharpness` expose 17 algos (voir docs/technique/reference.md
+`eoqual.metrics.sharpness` expose 17 algos (voir docs/technique/no-reference.md
 §3.3, docs/technique/bibliographie.md) — ce ne sont **pas** des implémentations
 interchangeables d'une même définition (contrairement à `psnr(algo=...)`
 par exemple) : chaque algo est une méthode de mesure différente. Plutôt
@@ -24,7 +24,7 @@ des principes complémentaires plutôt que des variantes d'un même principe :
   longue date (Krotkov 1987 ; Pech-Pacheco et al. 2000).
 - ``s3`` — spectral, combine pente du spectre de Fourier et variation
   totale locale (Vu & Chandler). Un bug de normalisation le rendant non
-  monotone avec le flou a été corrigé (voir docs/technique/reference.md §3.3.c
+  monotone avec le flou a été corrigé (voir docs/technique/no-reference.md §3.3.c
   et la docstring du module) ; un léger résidu subsiste entre une image
   parfaitement nette et un flou d'environ 1 pixel, sans incidence sur le
   classement d'images plus franchement floues.

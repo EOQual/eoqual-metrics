@@ -4,7 +4,7 @@ Formule mathématique exacte de chaque métrique consolidée en une seule
 implémentation (`numpy`), avec un glossaire de notation commun. Portée
 volontairement limitée à ces métriques pour l'instant, plutôt que
 d'essayer de couvrir les 41 métriques du registre d'un coup et de risquer
-de ne pas pouvoir tenir ce document à jour — voir [référence technique](reference.md)
+de ne pas pouvoir tenir ce document à jour — voir [documents techniques](index.md)
 pour la méthode de chaque famille, [bibliographie](bibliographie.md) pour les références
 bibliographiques (ce document ne les répète pas).
 
@@ -88,7 +88,7 @@ orthogonaux, `-1` = opposés. Plus élevé = meilleure qualité.
 ---
 
 *Les six métriques ci-dessus n'ont qu'un seul algorithme (`"numpy"`),
-d'après l'audit documenté dans la [référence technique](reference.md) §2.1/
+d'après l'audit documenté dans la [Full-Reference](full-reference.md) §2.1/
 §2.2/§2.4 : les alternatives (bibliothèques tierces) donnent
 un résultat statistiquement identique pour un temps de calcul équivalent
 — les garder n'apporterait rien ; l'algo `image-similarity-measures`

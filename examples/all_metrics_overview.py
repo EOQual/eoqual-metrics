@@ -3,7 +3,7 @@
 """
 Exemple d'utilisation — calcule toutes les métriques par défaut sur une
 image synthétique. Script de démonstration, PAS un test automatisé (pas
-d'assertion, pas de pytest — voir docs/technique/reference.md §5.4).
+d'assertion, pas de pytest — voir docs/technique/limites.md §5.4).
 
 Usage
 -----

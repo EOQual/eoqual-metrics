@@ -3,7 +3,7 @@
 """
 Exemple d'utilisation (CLI) — calcule une métrique qualité sur une image
 (vs. sa référence). Script de démonstration, PAS un test automatisé (voir
-docs/technique/reference.md §5.4).
+docs/technique/limites.md §5.4).
 
 Usage
 -----

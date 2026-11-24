@@ -12,13 +12,13 @@ Ouvrez une issue avec :
 - un exemple minimal reproduisant le problème (image de test, code) ;
 - le résultat obtenu vs. attendu, et si pertinent la trace complète
   (le runner ne masque volontairement aucune exception — voir
-  [référence technique](docs/technique/reference.md) §5.1).
+  [référence technique](docs/technique/limites.md) §5.1).
 
 ## Proposer une métrique
 
 Ouvrez une issue décrivant la métrique (nom, référence bibliographique si
 elle existe, ce qu'elle apporte par rapport aux métriques déjà cataloguées
-— voir [référence technique](docs/technique/reference.md) pour l'existant). Pas besoin de savoir
+— voir [documents techniques](docs/technique/index.md) pour l'existant). Pas besoin de savoir
 l'implémenter pour la proposer.
 
 ## Implémenter une métrique ou un algorithme
@@ -51,7 +51,7 @@ projet en amont.
 ## Tests
 
 Le projet n'a pas encore de suite `pytest` assertive (voir
-[référence technique](docs/technique/reference.md) §5.4) — en attendant, toute nouvelle
+[référence technique](docs/technique/limites.md) §5.4) — en attendant, toute nouvelle
 implémentation gagne à être accompagnée d'un script dans `examples/`
 démontrant son usage, et idéalement d'une comparaison numérique contre une
 référence connue (valeur publiée, implémentation de référence) dans la
@@ -60,7 +60,7 @@ description de la pull request.
 ## Documentation
 
 Toute métrique/algo nouveau ou modifié doit rester reflété dans
-`README.md` (catalogue) et [référence technique](docs/technique/reference.md) (méthode,
+`README.md` (catalogue) et [documents techniques](docs/technique/index.md) (méthode,
 implémentation, limites) — les docstrings seules ne suffisent pas, ces
 deux documents sont la carte d'ensemble du projet.
 

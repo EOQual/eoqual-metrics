@@ -7,7 +7,7 @@ cd ${ROOTDIR}
 
 # NOTE : tests/ ne contient volontairement aucun test pytest à ce
 # stade (scripts de démonstration -> examples/, exploration -> tests/exploratory/,
-# voir docs/technique/reference.md §5.4 pour la justification). pytest ne collectera
+# voir docs/technique/limites.md §5.4 pour la justification). pytest ne collectera
 # donc rien ici tant qu'une vraie suite assertive n'aura pas été ajoutée sous
 # tests/ — laissé en l'état (pas cassé, juste vide) pour ne pas avoir à
 # retoucher ce script quand cette suite sera écrite.

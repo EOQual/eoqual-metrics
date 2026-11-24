@@ -3,7 +3,7 @@
 """
 Exemple d'utilisation — comparaison calcul pleine image vs. calcul par
 tuiles, pour la même métrique. Script de démonstration, PAS un test
-automatisé (voir docs/technique/reference.md §5.4).
+automatisé (voir docs/technique/limites.md §5.4).
 
 Quand préférer l'un ou l'autre
 ------------------------------

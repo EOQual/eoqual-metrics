@@ -116,7 +116,7 @@ def mse(
         alternatives (``"skimage"``, ``"metrikz"``, ``"sewar"``) ont été
         retirées après validation : résultat bit-exact et temps de calcul
         équivalent à la version numpy sur image réelle et synthétique (voir
-        `docs/technique/reference.md` §2.1, `docs/technique/formulaire.md`). Toute autre valeur
+        `docs/technique/full-reference.md` §2.1, `docs/technique/formulaire.md`). Toute autre valeur
         est acceptée pour compatibilité ascendante : un avertissement est
         émis et le calcul est fait avec ``"numpy"``.
     return_map : bool, optional
@@ -194,7 +194,7 @@ def rmse(
     algo : str, optional
         Seule ``"numpy"`` est implémentée (défaut). ``"metrikz"`` et
         ``"sewar"`` ont été retirés après validation : résultat bit-exact
-        et temps de calcul équivalent (voir `docs/technique/reference.md` §2.1,
+        et temps de calcul équivalent (voir `docs/technique/full-reference.md` §2.1,
         `docs/technique/formulaire.md`). ``"image-similarity-measures"`` a également été
         retiré, mais pour une raison différente : ce n'était **pas** la
         même métrique malgré le nom — ISM renvoie la RMSE **normalisée**
